@@ -2,12 +2,12 @@
 # app.py — FV Consulting (Navbar azul + Home intacto + SIDEBAR FUNCIONAL)
 # + Login Google en el HOME (zona verde) + Roles por dominio
 #
-# ✅ Botón de login en el texto bajo “Bienvenidos a FV Consulting”
-# ✅ Cualquier Google usa la app
-# ✅ SOLO @fvagconsulting.com puede "Crear blog"
-# ✅ Admin usa TODO
+# ✅ Botón de login en el HOME (zona verde)
+# ✅ Botones "Explorar →" se habilitan SOLO tras iniciar sesión
+# ✅ Router bloquea todas las páginas (excepto Inicio) si no hay sesión
+# ✅ SOLO @fvagconsulting.com puede "Crear blog" (admin usa TODO)
 # ✅ Sidebar plegable muestra foto + correo + logout al iniciar sesión
-# ✅ Sin afectar el resto
+# ✅ FIX: elimina el </div> suelto (wrappers HTML incompatibles con Streamlit)
 # ============================================================
 
 from pathlib import Path
@@ -48,7 +48,7 @@ st.set_page_config(
     page_title="FV Consulting",
     page_icon=img1 if img1 else "📊",
     layout="wide",
-    initial_sidebar_state="auto",  # ✅ sidebar plegable por defecto
+    initial_sidebar_state="auto",
 )
 
 # ----------------------------
@@ -119,25 +119,21 @@ def render_user_sidebar(logged_in: bool, email: str, name: str, picture: str, is
 
 
 # ============================================================
-# CSS: SOLO NAVBAR + padding superior
-# ⚠️ CLAVE: NO ocultar el header de Streamlit (si no, no aparece el botón ☰)
+# CSS: NAVBAR + padding superior
 # ============================================================
 NAVBAR_H = 64
-NAVBAR_LEFT_GUTTER = 72  # 👈 espacio reservado para el botón ☰
+NAVBAR_LEFT_GUTTER = 72  # espacio reservado para el ☰
 
 st.markdown(
     f"""
     <style>
-      /* Puedes ocultar menú y footer sin romper sidebar */
       #MainMenu {{visibility: hidden;}}
       footer {{visibility: hidden;}}
 
-      /* Empuja el contenido bajo la navbar */
       .main .block-container {{
         padding-top: {NAVBAR_H + 18}px !important;
       }}
 
-      /* ====== GUTTER IZQUIERDO (zona del ☰) ====== */
       .fv-left-gutter {{
         position: fixed;
         top: 0;
@@ -150,7 +146,6 @@ st.markdown(
         pointer-events: none;
       }}
 
-      /* ====== NAVBAR (empieza DESPUÉS del ☰) ====== */
       .fv-topbar {{
         position: fixed;
         top: 0;
@@ -175,7 +170,6 @@ st.markdown(
         gap: 18px;
       }}
 
-      /* Marca FV */
       .fv-brand {{
         color: #ffffff !important;
         font-weight: 800;
@@ -193,7 +187,6 @@ st.markdown(
         flex-wrap: nowrap;
       }}
 
-      /* Links navbar: blancos y SIN subrayado en todos los estados */
       .fv-links a,
       .fv-links a:visited,
       .fv-links a:hover,
@@ -212,13 +205,8 @@ st.markdown(
         white-space: nowrap;
       }}
 
-      .fv-link:hover {{
-        background: rgba(255,255,255,0.12);
-      }}
-
-      .fv-link.active {{
-        background: rgba(255,255,255,0.16);
-      }}
+      .fv-link:hover {{ background: rgba(255,255,255,0.12); }}
+      .fv-link.active {{ background: rgba(255,255,255,0.16); }}
 
       @media (max-width: 950px) {{
         .fv-brand {{ font-size: 18px; }}
@@ -231,9 +219,7 @@ st.markdown(
 )
 
 # ============================================================
-# THEME FIX GLOBAL:
-# - Dark: se queda como está
-# - Light: fuerza texto oscuro legible
+# THEME FIX GLOBAL (modo claro)
 # ============================================================
 st.markdown("""
 <style>
@@ -274,7 +260,7 @@ body[data-theme="light"] table {
 """, unsafe_allow_html=True)
 
 # ============================================================
-# FIX ROBUSTO: el botón ☰ del sidebar NO queda tapado por tu navbar
+# FIX: botón ☰ del sidebar NO queda tapado por navbar
 # ============================================================
 st.markdown(
     f"""
@@ -298,24 +284,18 @@ st.markdown(
 )
 
 # ============================================================
-# RESPONSIVE FIX (PC / Tablet / Móvil)
+# RESPONSIVE FIX (igual que tu estilo)
 # ============================================================
 st.markdown("""
 <style>
 html, body { max-width: 100%; overflow-x: hidden; }
-
-.main .block-container {
-  padding-left: 1rem !important;
-  padding-right: 1rem !important;
-}
-
+.main .block-container { padding-left: 1rem !important; padding-right: 1rem !important; }
 .fv-link { padding: 8px 10px; }
 
 @media (max-width: 1024px) {
   .fv-topbar-inner { padding: 0 16px !important; }
   .fv-links { gap: 10px !important; }
   .fv-link { font-size: 13px !important; padding: 7px 8px !important; }
-  .cards-section { grid-template-columns: repeat(2, 1fr) !important; padding: 1.25rem 1rem 1.75rem !important; }
   .hero-left-title { font-size: 2.0rem !important; }
   .hero-right-title { font-size: 1.5rem !important; }
 }
@@ -328,7 +308,6 @@ html, body { max-width: 100%; overflow-x: hidden; }
   .fv-link { font-size: 12px !important; padding: 6px 8px !important; border-radius: 10px !important; }
   .main .block-container { padding-top: 86px !important; }
   [data-testid="stSidebarNavButton"] { top: 68px !important; left: 10px !important; transform: scale(0.95); }
-  .cards-section { grid-template-columns: 1fr !important; padding: 1rem !important; }
   .hero-left-text, .hero-right-text { text-align: center !important; padding: 0 !important; }
   .hero-left-title { font-size: 1.6rem !important; }
   .hero-right-title { font-size: 1.25rem !important; }
@@ -377,28 +356,11 @@ def render_navbar(active: str, show_crear_blog: bool):
 
 
 # ============================================================
-# TU INICIO (Home) — intacto + CTA login en zona verde
+# HOME (misma estética) + CTA Login en zona verde
 # ============================================================
 HOME_CSS = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
-
-:root {
-    --bg-dark: #0a0e1a;
-    --bg-card: #151923;
-    --text-primary: #ffffff;
-    --text-secondary: #94a3b8;
-    --accent: #6366f1;
-}
-
-/* SOLO HOME */
-.home-page {
-    background: #0a0e1a;
-    color: white;
-    min-height: unset !important;
-    border-radius: 18px;
-    padding: 0.5rem 0 1rem;
-}
 
 .hero-left-text { text-align: right; padding-right: 2rem; }
 .hero-left-title {
@@ -450,19 +412,7 @@ HOME_CSS = """
     z-index: 10;
 }
 
-.img-card img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transform: translateZ(30px);
-}
-
-.cards-section {
-    padding: 1.5rem 2rem 2.0rem;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.25rem;
-}
+.img-card img { width: 100%; height: 100%; object-fit: cover; transform: translateZ(30px); }
 
 .service-card {
     background: rgba(21, 25, 35, 0.8);
@@ -476,7 +426,6 @@ HOME_CSS = """
     border-color: rgba(99, 102, 241, 0.5);
     background: rgba(21, 25, 35, 1);
 }
-
 .card-icon {
     width: 48px; height: 48px;
     display: flex; align-items: center; justify-content: center;
@@ -521,18 +470,10 @@ HOME_CSS = """
     color: #a5b4fc;
 }
 
-@media (max-width: 1024px) {
-    .cards-section { grid-template-columns: repeat(2, 1fr); }
-}
-@media (max-width: 768px) {
-    .cards-section { grid-template-columns: 1fr; }
-    .hero-left-text, .hero-right-text { text-align: center; padding: 0; }
-}
-
 /* ===== BLOQUE LOGIN (zona verde) ===== */
 .fv-login-cta {
   max-width: 920px;
-  margin: 0.4rem auto 0.9rem;
+  margin: 0.35rem auto 0.9rem;
   padding: 1.1rem 1.2rem;
   border-radius: 16px;
   background: rgba(21, 25, 35, 0.70);
@@ -555,7 +496,6 @@ HOME_CSS = """
 
 def render_home(logged_in: bool, email: str, name: str, is_admin: bool):
     st.markdown(HOME_CSS, unsafe_allow_html=True)
-    st.markdown('<div class="home-page">', unsafe_allow_html=True)
 
     col_left, col_center, col_right = st.columns([1, 2, 1])
 
@@ -604,7 +544,6 @@ def render_home(logged_in: bool, email: str, name: str, is_admin: bool):
             render_img("image_file/logo_fvag.png", "FV")
         with r2[2]:
             render_img("image_file/image_5.png", "5")
-        st.markdown("</div>", unsafe_allow_html=True)
 
     with col_right:
         st.markdown(
@@ -616,13 +555,17 @@ def render_home(logged_in: bool, email: str, name: str, is_admin: bool):
             unsafe_allow_html=True,
         )
 
-    # Título central
+    # Título + texto principal
     st.markdown(
         """
         <div style="text-align:center; padding: 2.2rem 2rem 0.35rem;">
             <h2 style="font-family:'Space Grotesk',sans-serif; font-size: 3rem; font-weight: 700; color: white; margin: 0;">
                 Bienvenidos a FV Consulting
             </h2>
+            <p style="font-family:'Inter',sans-serif; font-size: 1.1rem; color: #94a3b8; margin-top: 0.9rem; line-height:1.7;">
+                Una plataforma integral que combina investigación, análisis de datos, visualización avanzada y carga de documentos
+                para ofrecer soluciones completas y eficientes.
+            </p>
         </div>
         """,
         unsafe_allow_html=True,
@@ -649,21 +592,23 @@ def render_home(logged_in: bool, email: str, name: str, is_admin: bool):
                 use_container_width=True,
                 key="home_login_btn",
             )
+        st.caption("🔒 Inicia sesión para habilitar los botones “Explorar →”.")
+
     else:
         st.markdown(
             f"""
             <div class="fv-login-cta">
               <p>
                 ✅ Sesión iniciada como <strong>{name or "Usuario"}</strong> (<strong>{email}</strong>).<br/>
-                {"🟢 Eres <strong>Admin</strong>: acceso total." if is_admin else "🔒 Acceso a todas las apps, excepto <strong>Crear blog</strong>."}
+                {"🟢 Eres <strong>Admin</strong>: acceso total." if is_admin else "✅ Puedes usar las apps. <strong>Crear blog</strong> está restringido."}
               </p>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
-    # Cards
-    st.markdown('<div class="cards-section">', unsafe_allow_html=True)
+    # ===== CARDS + BOTONES (ahora se habilitan solo con login) =====
+    can_navigate = logged_in
 
     c1, c2, c3 = st.columns(3)
     with c1:
@@ -682,7 +627,7 @@ def render_home(logged_in: bool, email: str, name: str, is_admin: bool):
             """,
             unsafe_allow_html=True,
         )
-        if st.button("Explorar →", key="home_blog", use_container_width=True):
+        if st.button("Explorar →", key="home_blog", use_container_width=True, disabled=not can_navigate):
             goto("Blog")
 
     with c2:
@@ -701,7 +646,7 @@ def render_home(logged_in: bool, email: str, name: str, is_admin: bool):
             """,
             unsafe_allow_html=True,
         )
-        if st.button("Explorar →", key="home_analisis", use_container_width=True):
+        if st.button("Explorar →", key="home_analisis", use_container_width=True, disabled=not can_navigate):
             goto("Análisis de Datos")
 
     with c3:
@@ -720,7 +665,7 @@ def render_home(logged_in: bool, email: str, name: str, is_admin: bool):
             """,
             unsafe_allow_html=True,
         )
-        if st.button("Explorar →", key="home_mapas", use_container_width=True):
+        if st.button("Explorar →", key="home_mapas", use_container_width=True, disabled=not can_navigate):
             goto("Mapas")
 
     c4, c5 = st.columns(2)
@@ -740,7 +685,7 @@ def render_home(logged_in: bool, email: str, name: str, is_admin: bool):
             """,
             unsafe_allow_html=True,
         )
-        if st.button("Explorar →", key="home_cargar", use_container_width=True):
+        if st.button("Explorar →", key="home_cargar", use_container_width=True, disabled=not can_navigate):
             goto("Cargar Data")
 
     with c5:
@@ -759,16 +704,10 @@ def render_home(logged_in: bool, email: str, name: str, is_admin: bool):
             """,
             unsafe_allow_html=True,
         )
-        if st.button("Explorar →", key="home_crear_blog", use_container_width=True):
-            if not logged_in:
-                st.warning("Primero inicia sesión para continuar.")
-            elif not is_admin:
-                st.error("Tu cuenta no tiene permisos para crear publicaciones.")
-            else:
-                goto("Crear blog")
-
-    st.markdown("</div>", unsafe_allow_html=True)  # cards-section
-    st.markdown("</div>", unsafe_allow_html=True)  # home-page
+        # Solo admin: habilita navegación real
+        disabled_crear = (not can_navigate) or (can_navigate and not is_admin)
+        if st.button("Explorar →", key="home_crear_blog", use_container_width=True, disabled=disabled_crear):
+            goto("Crear blog")
 
 
 # ============================================================
@@ -783,6 +722,15 @@ def main():
     # Sidebar: si hay sesión, mostrar usuario + logout
     render_user_sidebar(logged_in, email, name, picture, is_admin)
 
+    # 🔒 GATE GLOBAL:
+    # Todas las páginas (excepto Inicio) requieren iniciar sesión.
+    if page != "Inicio" and not logged_in:
+        st.warning("Debes iniciar sesión para usar las aplicaciones.")
+        c1, c2, c3 = st.columns([2, 1.3, 2])
+        with c2:
+            st.button(":material/login: Iniciar sesión con Google", on_click=st.login, use_container_width=True)
+        st.stop()
+
     if page == "Inicio":
         render_home(logged_in, email, name, is_admin)
 
@@ -790,13 +738,7 @@ def main():
         boletines_app()
 
     elif page == "Crear blog":
-        # ✅ Si NO ha iniciado sesión, pedir login
-        if not logged_in:
-            st.warning("Debes iniciar sesión para acceder a esta sección.")
-            st.button(":material/login: Iniciar sesión con Google", on_click=st.login)
-            st.stop()
-
-        # ✅ Solo restringimos a NO-admin (admin = acceso total)
+        # Admin usa TODO; otros NO
         if not is_admin:
             st.error("Acceso denegado: solo cuentas @fvagconsulting.com pueden crear publicaciones.")
             st.stop()
