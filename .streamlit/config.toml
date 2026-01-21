@@ -1,3 +1,2 @@
-[client]
-
-showSidebarNavegation = False
+[theme]
+base = "dark"

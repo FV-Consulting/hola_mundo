@@ -174,7 +174,67 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+# ============================================================
+# THEME FIX GLOBAL:
+# - Dark: se queda como está
+# - Light: fuerza texto oscuro legible
+# ============================================================
+st.markdown("""
+<style>
 
+/* ================================
+   MODO CLARO (light)
+   ================================ */
+body[data-theme="light"] {
+    --fv-text-main: #0f172a;
+    --fv-text-secondary: #1f2933;
+}
+
+/* Texto general */
+body[data-theme="light"] p,
+body[data-theme="light"] span,
+body[data-theme="light"] div,
+body[data-theme="light"] label,
+body[data-theme="light"] li,
+body[data-theme="light"] h1,
+body[data-theme="light"] h2,
+body[data-theme="light"] h3,
+body[data-theme="light"] h4,
+body[data-theme="light"] h5,
+body[data-theme="light"] h6 {
+    color: #0f172a !important;
+}
+
+/* Markdown */
+body[data-theme="light"] .stMarkdown,
+body[data-theme="light"] .stMarkdown * {
+    color: #0f172a !important;
+}
+
+/* Inputs, selects, widgets */
+body[data-theme="light"] input,
+body[data-theme="light"] textarea,
+body[data-theme="light"] select {
+    color: #0f172a !important;
+}
+
+/* Sidebar en modo claro */
+body[data-theme="light"] section[data-testid="stSidebar"] {
+    color: #0f172a !important;
+}
+
+/* Dataframes */
+body[data-theme="light"] .dataframe,
+body[data-theme="light"] table {
+    color: #0f172a !important;
+}
+
+/* ================================
+   MODO OSCURO (dark)
+   No tocamos nada: usa tu diseño actual
+   ================================ */
+</style>
+""", unsafe_allow_html=True)
 
 # ============================================================
 # FIX ROBUSTO: el botón ☰ del sidebar NO queda tapado por tu navbar
