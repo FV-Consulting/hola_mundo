@@ -267,6 +267,138 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+# ============================================================
+# RESPONSIVE FIX (PC / Tablet / Móvil)
+# - Reduce navbar, separaciones y tipografías en pantallas chicas
+# - Evita desbordes horizontales
+# - Ajusta Home cards y textos
+# ============================================================
+st.markdown("""
+<style>
+/* Evitar scroll horizontal por elementos anchos */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Hacer que el contenedor no quede apretado en móvil */
+.main .block-container {
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+}
+
+/* Links de la navbar: más compactos por defecto (sin cambiar tu look) */
+.fv-link { 
+  padding: 8px 10px;
+}
+
+/* =========================================
+   TABLET (<= 1024px)
+   ========================================= */
+@media (max-width: 1024px) {
+  .fv-topbar-inner {
+    padding: 0 16px !important;
+  }
+  .fv-links {
+    gap: 10px !important;
+  }
+  .fv-link {
+    font-size: 13px !important;
+    padding: 7px 8px !important;
+  }
+
+  /* Home: cards (si tu CSS define 3 columnas, aquí forzamos 2) */
+  .cards-section {
+    grid-template-columns: repeat(2, 1fr) !important;
+    padding: 1.25rem 1rem 1.75rem !important;
+  }
+
+  /* Home: títulos más chicos */
+  .hero-left-title { font-size: 2.0rem !important; }
+  .hero-right-title { font-size: 1.5rem !important; }
+}
+
+/* =========================================
+   MÓVIL (<= 768px)
+   ========================================= */
+@media (max-width: 768px) {
+
+  /* Navbar: más baja y compacta */
+  .fv-topbar {
+    height: 56px !important;
+  }
+  .fv-topbar-inner {
+    padding: 0 12px !important;
+    gap: 10px !important;
+    grid-template-columns: 1fr !important;  /* marca arriba, links abajo */
+  }
+
+  /* Marca centrada */
+  .fv-brand {
+    display: block;
+    text-align: center;
+    font-size: 18px !important;
+    margin-top: 6px;
+  }
+
+  /* Links: permiten wrap (saltos de línea) */
+  .fv-links {
+    justify-content: center !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    padding-bottom: 8px;
+  }
+  .fv-link {
+    font-size: 12px !important;
+    padding: 6px 8px !important;
+    border-radius: 10px !important;
+  }
+
+  /* Ajuste: si cambiaste NAVBAR_H en Python, el padding se descalza.
+     Como tu navbar real queda a 56px, empujamos el contenido para que no se solape. */
+  .main .block-container {
+    padding-top: 86px !important;
+  }
+
+  /* Botón ☰ del sidebar: más arriba para móviles */
+  [data-testid="stSidebarNavButton"] {
+    top: 68px !important;
+    left: 10px !important;
+    transform: scale(0.95);
+  }
+
+  /* Home: columnas -> una sola */
+  .cards-section {
+    grid-template-columns: 1fr !important;
+    padding: 1rem !important;
+  }
+
+  /* Home: texto más compacto */
+  .hero-left-text, .hero-right-text {
+    text-align: center !important;
+    padding: 0 !important;
+  }
+  .hero-left-title { font-size: 1.6rem !important; }
+  .hero-right-title { font-size: 1.25rem !important; }
+
+  /* Imágenes en la grilla: reduce márgenes para no cortar */
+  .images-showcase-center { max-width: 100% !important; }
+  .img-card { border-radius: 16px !important; }
+}
+
+/* =========================================
+   MÓVIL CHICO (<= 420px)
+   ========================================= */
+@media (max-width: 420px) {
+  .fv-link {
+    font-size: 11px !important;
+    padding: 6px 7px !important;
+  }
+  .hero-left-title { font-size: 1.35rem !important; }
+  .hero-right-title { font-size: 1.1rem !important; }
+}
+</style>
+""", unsafe_allow_html=True)
 
 
 def render_navbar(active: str):
