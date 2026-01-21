@@ -331,9 +331,19 @@ def render_navbar(active: str, show_crear_blog: bool):
     def href(p: str) -> str:
         return f"/?page={quote(p)}"
 
-    crear_blog_link = ""
+    # ✅ Armamos los links como lista (nada de insertar HTML suelto)
+    links = [
+        f'<a class="{cls("Inicio")}" href="{href("Inicio")}">Inicio</a>',
+        f'<a class="{cls("Blog")}" href="{href("Blog")}">Blog</a>',
+        f'<a class="{cls("Análisis de Datos")}" href="{href("Análisis de Datos")}">Análisis de Datos</a>',
+        f'<a class="{cls("Mapas")}" href="{href("Mapas")}">Mapas</a>',
+        f'<a class="{cls("Cargar Data")}" href="{href("Cargar Data")}">Cargar Data</a>',
+    ]
+
     if show_crear_blog:
-        crear_blog_link = f'<a class="{cls("Crear blog")}" href="{href("Crear blog")}">Crear blog</a>'
+        links.append(f'<a class="{cls("Crear blog")}" href="{href("Crear blog")}">Crear blog</a>')
+
+    links_html = "\n".join(links)
 
     st.markdown(
         f"""
@@ -341,12 +351,7 @@ def render_navbar(active: str, show_crear_blog: bool):
           <div class="fv-topbar-inner">
             <a class="fv-brand" href="{href("Inicio")}">FV Consulting</a>
             <div class="fv-links">
-              <a class="{cls("Inicio")}" href="{href("Inicio")}">Inicio</a>
-              <a class="{cls("Blog")}" href="{href("Blog")}">Blog</a>
-              <a class="{cls("Análisis de Datos")}" href="{href("Análisis de Datos")}">Análisis de Datos</a>
-              <a class="{cls("Mapas")}" href="{href("Mapas")}">Mapas</a>
-              <a class="{cls("Cargar Data")}" href="{href("Cargar Data")}">Cargar Data</a>
-              {crear_blog_link}
+              {links_html}
             </div>
           </div>
         </div>
