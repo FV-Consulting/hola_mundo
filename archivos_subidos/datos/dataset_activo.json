@@ -1,0 +1,14 @@
+{
+  "last_file": "dataset_variaciones-meteorologicas-2006-2008_20260114_011704.parquet",
+  "last_path": "archivos_subidos/datos\\dataset_variaciones-meteorologicas-2006-2008_20260114_011704.parquet",
+  "original_name": "variaciones-meteorologicas-2006-2008.csv",
+  "saved_at": "2026-01-14 01:17:04",
+  "format": "parquet",
+  "rows": 13647,
+  "cols": 15,
+  "meta": {
+    "read_meta": {
+      "ext": ".csv"
+    }
+  }
+}
