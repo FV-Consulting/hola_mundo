@@ -535,225 +535,221 @@ div[data-testid="stVerticalBlock"]:has(#fv-cards-anchor) {
 """
 
 
+
 def render_home(logged_in: bool, email: str, name: str, is_admin: bool):
     st.markdown(HOME_CSS, unsafe_allow_html=True)
 
-    with st.container():
-        st.markdown('<div id="fv-home-anchor"></div>', unsafe_allow_html=True)
+    col_left, col_center, col_right = st.columns([1, 2, 1])
 
-        col_left, col_center, col_right = st.columns([1, 2, 1])
-
-        with col_left:
-            st.markdown(
-                """
-                <div class="hero-left-text">
-                    <h2 class="hero-left-title">Informacion, datos, economia y simpleza en un mismo sitio.</h2>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-
-        def img_to_data_uri(path: str) -> str:
-            p = Path(path)
-            if not p.exists():
-                return ""
-            ext = p.suffix.lower().replace(".", "")
-            if ext == "jpg":
-                ext = "jpeg"
-            return f"data:image/{ext};base64,{base64.b64encode(p.read_bytes()).decode('utf-8')}"
-
-        def render_img(path: str, placeholder: str):
-            uri = img_to_data_uri(path)
-            if uri:
-                st.markdown(f'<div class="img-card"><img src="{uri}"></div>', unsafe_allow_html=True)
-            else:
-                st.markdown(
-                    f'<div class="img-card" style="color:#64748b;font-weight:800;">{placeholder}</div>',
-                    unsafe_allow_html=True,
-                )
-
-        with col_center:
-            # ✅ ancla para el bloque de imágenes (sin abrir/cerrar div HTML)
-            st.markdown('<div id="fv-images-anchor"></div>', unsafe_allow_html=True)
-
-            r1 = st.columns(3)
-            with r1[0]:
-                render_img("image_file/image_1.png", "1")
-            with r1[1]:
-                render_img("image_file/image_2.png", "2")
-            with r1[2]:
-                render_img("image_file/image_3.png", "3")
-
-            r2 = st.columns(3)
-            with r2[0]:
-                render_img("image_file/image_4.png", "4")
-            with r2[1]:
-                render_img("image_file/logo_fvag.png", "FV")
-            with r2[2]:
-                render_img("image_file/image_5.png", "5")
-
-        with col_right:
-            st.markdown(
-                """
-                <div class="hero-right-text">
-                    <h2 class="hero-right-title">Navega por la innovación en análisis e investigación.</h2>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-
-        # Título central
+    with col_left:
         st.markdown(
             """
-            <div style="text-align:center; padding: 2.2rem 2rem 0.35rem;">
-                <h2 style="font-family:'Space Grotesk',sans-serif; font-size: 3rem; font-weight: 700; color: white; margin: 0;">
-                    Bienvenidos a FV Consulting
-                </h2>
+            <div class="hero-left-text">
+                <h2 class="hero-left-title">Informacion, datos, economia y simpleza en un mismo sitio.</h2>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
-        # CTA Login (zona verde)
-        if not logged_in:
-            st.markdown(
-                """
-                <div class="fv-login-cta">
-                  <p>
-                    <strong>Inicia sesión</strong> para usar las aplicaciones de <strong>FV Consulting</strong>.<br/>
-                    Si tu correo es <strong>@fvagconsulting.com</strong>, tendrás acceso total, incluyendo <strong>Crear blog</strong>.
-                  </p>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-            b1, b2, b3 = st.columns([2, 1.3, 2])
-            with b2:
-                st.button(
-                    ":material/login: Iniciar sesión con Google",
-                    on_click=st.login,
-                    use_container_width=True,
-                    key="home_login_btn",
-                )
+    def img_to_data_uri(path: str) -> str:
+        p = Path(path)
+        if not p.exists():
+            return ""
+        ext = p.suffix.lower().replace(".", "")
+        if ext == "jpg":
+            ext = "jpeg"
+        return f"data:image/{ext};base64,{base64.b64encode(p.read_bytes()).decode('utf-8')}"
+
+    def render_img(path: str, placeholder: str):
+        uri = img_to_data_uri(path)
+        if uri:
+            st.markdown(f'<div class="img-card"><img src="{uri}"></div>', unsafe_allow_html=True)
         else:
             st.markdown(
-                f"""
-                <div class="fv-login-cta">
-                  <p>
-                    ✅ Sesión iniciada como <strong>{name or "Usuario"}</strong> (<strong>{email}</strong>).<br/>
-                    {"🟢 Eres <strong>Admin</strong>: acceso total." if is_admin else "🔒 Acceso a todas las apps, excepto <strong>Crear blog</strong>."}
-                  </p>
-                </div>
-                """,
+                f'<div class="img-card" style="color:#64748b;font-weight:800;">{placeholder}</div>',
                 unsafe_allow_html=True,
             )
 
-        # ✅ ancla cards-section (sin wrapper HTML)
-        st.markdown('<div id="fv-cards-anchor"></div>', unsafe_allow_html=True)
+    with col_center:
+        st.markdown('<div class="images-showcase-center">', unsafe_allow_html=True)
+        r1 = st.columns(3)
+        with r1[0]:
+            render_img("image_file/image_1.png", "1")
+        with r1[1]:
+            render_img("image_file/image_2.png", "2")
+        with r1[2]:
+            render_img("image_file/image_3.png", "3")
+        r2 = st.columns(3)
+        with r2[0]:
+            render_img("image_file/image_4.png", "4")
+        with r2[1]:
+            render_img("image_file/logo_fvag.png", "FV")
+        with r2[2]:
+            render_img("image_file/image_5.png", "5")
 
-        explore_disabled = not logged_in
+    with col_right:
+        st.markdown(
+            """
+            <div class="hero-right-text">
+                <h2 class="hero-right-title">Navega por la innovación en análisis e investigación.</h2>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
-        c1, c2, c3 = st.columns(3)
-        with c1:
-            st.markdown(
-                """
-                <div class="service-card">
-                    <div class="card-icon">📊</div>
-                    <div class="card-category">REPORTES • VISUALIZACIÓN</div>
-                    <h3 class="card-title">Blog de Investigación</h3>
-                    <p class="card-description">Economía, Agricultura, Finanzas, Econometría y Análisis de datos.</p>
-                    <div class="card-tags">
-                        <span class="tag">Dashboards</span>
-                        <span class="tag">Analytics</span>
-                    </div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-            if st.button("Explorar →", key="home_blog", use_container_width=True, disabled=explore_disabled):
-                goto("Blog")
+    # Título + texto principal
+    st.markdown(
+        """
+        <div style="text-align:center; padding: 2.2rem 2rem 0.35rem;">
+            <h2 style="font-family:'Space Grotesk',sans-serif; font-size: 3rem; font-weight: 700; color: white; margin: 0;">
+                Bienvenidos a FV Consulting
+            </h2>
+            <p style="font-family:'Inter',sans-serif; font-size: 1.1rem; color: #94a3b8; margin-top: 0.9rem; line-height:1.7;">
+                Una plataforma integral que combina investigación, análisis de datos, visualización avanzada y carga de documentos
+                para ofrecer soluciones completas y eficientes.
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
-        with c2:
-            st.markdown(
-                """
-                <div class="service-card">
-                    <div class="card-icon">📈</div>
-                    <div class="card-category">ANALYTICS • ESTADÍSTICA</div>
-                    <h3 class="card-title">Análisis de Datos</h3>
-                    <p class="card-description">Herramientas para explorar, modelar y visualizar datos cargados previamente.</p>
-                    <div class="card-tags">
-                        <span class="tag">Machine Learning</span>
-                        <span class="tag">Predictivo</span>
-                    </div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-            if st.button("Explorar →", key="home_analisis", use_container_width=True, disabled=explore_disabled):
-                goto("Análisis de Datos")
-
-        with c3:
-            st.markdown(
-                """
-                <div class="service-card">
-                    <div class="card-icon">🗺️</div>
-                    <div class="card-category">MAPAS • ESTADÍSTICA</div>
-                    <h3 class="card-title">Análisis Geoespacial</h3>
-                    <p class="card-description">Visualización de mapas y análisis territorial con datos geoespaciales.</p>
-                    <div class="card-tags">
-                        <span class="tag">GIS</span>
-                        <span class="tag">Territorial</span>
-                    </div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-            if st.button("Explorar →", key="home_mapas", use_container_width=True, disabled=explore_disabled):
-                goto("Mapas")
-
-        c4, c5 = st.columns(2)
-        with c4:
-            st.markdown(
-                """
-                <div class="service-card">
-                    <div class="card-icon">📁</div>
-                    <div class="card-category">DOCUMENTOS • PROCESAMIENTO</div>
-                    <h3 class="card-title">Cargar Data</h3>
-                    <p class="card-description">Pipeline para cargar, depurar y procesar múltiples formatos.</p>
-                    <div class="card-tags">
-                        <span class="tag">Automatización</span>
-                        <span class="tag">ETL</span>
-                    </div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-            if st.button("Explorar →", key="home_cargar", use_container_width=True, disabled=explore_disabled):
-                goto("Cargar Data")
-
-        with c5:
-            st.markdown(
-                """
-                <div class="service-card">
-                    <div class="card-icon">✍️</div>
-                    <div class="card-category">PUBLICACIÓN • MARKDOWN</div>
-                    <h3 class="card-title">Crear blog</h3>
-                    <p class="card-description">Crea y publica entradas en Markdown con imágenes y tablas.</p>
-                    <div class="card-tags">
-                        <span class="tag">Markdown</span>
-                        <span class="tag">Editor</span>
-                    </div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-            if st.button(
-                "Explorar →",
-                key="home_crear_blog",
+    # ===== CTA Login (zona verde) =====
+    if not logged_in:
+        st.markdown(
+            """
+            <div class="fv-login-cta">
+              <p>
+                <strong>Inicia sesión</strong> para usar las aplicaciones de <strong>FV Consulting</strong>.<br/>
+                Si tu correo es <strong>@fvagconsulting.com</strong>, tendrás acceso total, incluyendo <strong>Crear blog</strong>.
+              </p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        b1, b2, b3 = st.columns([2, 1.3, 2])
+        with b2:
+            st.button(
+                ":material/login: Iniciar sesión con Google",
+                on_click=st.login,
                 use_container_width=True,
-                disabled=(not logged_in) or (logged_in and not is_admin),
-            ):
-                goto("Crear blog")
+                key="home_login_btn",
+            )
+        st.caption("🔒 Inicia sesión para habilitar los botones “Explorar →”.")
+
+    else:
+        st.markdown(
+            f"""
+            <div class="fv-login-cta">
+              <p>
+                ✅ Sesión iniciada como <strong>{name or "Usuario"}</strong> (<strong>{email}</strong>).<br/>
+                {"🟢 Eres <strong>Admin</strong>: acceso total." if is_admin else "✅ Puedes usar las apps. <strong>Crear blog</strong> está restringido."}
+              </p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    # ===== CARDS + BOTONES (ahora se habilitan solo con login) =====
+    can_navigate = logged_in
+
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        st.markdown(
+            """
+            <div class="service-card">
+                <div class="card-icon">📊</div>
+                <div class="card-category">REPORTES • VISUALIZACIÓN</div>
+                <h3 class="card-title">Blog de Investigación</h3>
+                <p class="card-description">Economía, Agricultura, Finanzas, Econometría y Análisis de datos.</p>
+                <div class="card-tags">
+                    <span class="tag">Dashboards</span>
+                    <span class="tag">Analytics</span>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        if st.button("Explorar →", key="home_blog", use_container_width=True, disabled=not can_navigate):
+            goto("Blog")
+
+    with c2:
+        st.markdown(
+            """
+            <div class="service-card">
+                <div class="card-icon">📈</div>
+                <div class="card-category">ANALYTICS • ESTADÍSTICA</div>
+                <h3 class="card-title">Análisis de Datos</h3>
+                <p class="card-description">Herramientas para explorar, modelar y visualizar datos cargados previamente.</p>
+                <div class="card-tags">
+                    <span class="tag">Machine Learning</span>
+                    <span class="tag">Predictivo</span>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        if st.button("Explorar →", key="home_analisis", use_container_width=True, disabled=not can_navigate):
+            goto("Análisis de Datos")
+
+    with c3:
+        st.markdown(
+            """
+            <div class="service-card">
+                <div class="card-icon">🗺️</div>
+                <div class="card-category">MAPAS • ESTADÍSTICA</div>
+                <h3 class="card-title">Análisis Geoespacial</h3>
+                <p class="card-description">Visualización de mapas y análisis territorial con datos geoespaciales.</p>
+                <div class="card-tags">
+                    <span class="tag">GIS</span>
+                    <span class="tag">Territorial</span>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        if st.button("Explorar →", key="home_mapas", use_container_width=True, disabled=not can_navigate):
+            goto("Mapas")
+
+    c4, c5 = st.columns(2)
+    with c4:
+        st.markdown(
+            """
+            <div class="service-card">
+                <div class="card-icon">📁</div>
+                <div class="card-category">DOCUMENTOS • PROCESAMIENTO</div>
+                <h3 class="card-title">Cargar Data</h3>
+                <p class="card-description">Pipeline para cargar, depurar y procesar múltiples formatos.</p>
+                <div class="card-tags">
+                    <span class="tag">Automatización</span>
+                    <span class="tag">ETL</span>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        if st.button("Explorar →", key="home_cargar", use_container_width=True, disabled=not can_navigate):
+            goto("Cargar Data")
+
+    with c5:
+        st.markdown(
+            """
+            <div class="service-card">
+                <div class="card-icon">✍️</div>
+                <div class="card-category">PUBLICACIÓN • MARKDOWN</div>
+                <h3 class="card-title">Crear blog</h3>
+                <p class="card-description">Crea y publica entradas en Markdown con imágenes y tablas.</p>
+                <div class="card-tags">
+                    <span class="tag">Markdown</span>
+                    <span class="tag">Editor</span>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        # Solo admin: habilita navegación real
+        disabled_crear = (not can_navigate) or (can_navigate and not is_admin)
+        if st.button("Explorar →", key="home_crear_blog", use_container_width=True, disabled=disabled_crear):
+            goto("Crear blog")
 
 
 # ============================================================
