@@ -1,20 +1,22 @@
 # ============================================================
 # app.py — FV Consulting (Navbar azul + Home intacto + SIDEBAR FUNCIONAL)
+# + Login Google en el HOME (zona verde) + Roles por dominio
 #
-# ✅ Sidebar plegable funcionando en TODAS tus apps
-# ✅ Navbar azul fija, texto blanco, SIN subrayado
-# ✅ Mantiene tu Home tal cual
-# ✅ FIX: el botón ☰ no queda tapado por tu navbar
-#
-# Nota:
-# - Si alguna app interna tiene st.set_page_config(), debes quitarlo
+# ✅ Botón de login en el texto bajo “Bienvenidos a FV Consulting”
+# ✅ Cualquier Google usa la app
+# ✅ SOLO @fvagconsulting.com puede "Crear blog"
+# ✅ Admin usa TODO
+# ✅ Sidebar plegable muestra foto + correo + logout al iniciar sesión
+# ✅ Sin afectar el resto
 # ============================================================
 
 from pathlib import Path
 from urllib.parse import quote
+import base64
 
 import streamlit as st
 from PIL import Image
+import requests
 
 # ----------------------------
 # Imports de tus apps
@@ -62,11 +64,66 @@ def goto(page_name: str):
 
 
 # ============================================================
+# AUTH HELPERS (Streamlit Cloud)
+# ============================================================
+def auth_state():
+    """
+    Devuelve:
+      logged_in: bool
+      email: str
+      name: str
+      picture: str
+      is_admin: bool  (solo dominio fvagconsulting.com)
+    """
+    if not hasattr(st, "user") or not hasattr(st.user, "is_logged_in"):
+        return False, "", "", "", False
+
+    logged_in = bool(st.user.is_logged_in)
+    if not logged_in:
+        return False, "", "", "", False
+
+    email = st.user.email or ""
+    name = st.user.name or ""
+    picture = st.user.picture or ""
+    is_admin = email.lower().endswith("@fvagconsulting.com") if email else False
+    return logged_in, email, name, picture, is_admin
+
+
+def render_user_sidebar(logged_in: bool, email: str, name: str, picture: str, is_admin: bool):
+    if not logged_in:
+        return
+
+    with st.sidebar:
+        st.markdown("### 👤 Sesión")
+        c1, c2 = st.columns([1, 3])
+
+        with c1:
+            if picture:
+                try:
+                    r = requests.get(picture, timeout=10)
+                    if r.status_code == 200:
+                        st.image(r.content, width=60)
+                    else:
+                        st.write(" ")
+                except Exception:
+                    st.write(" ")
+            else:
+                st.write(" ")
+
+        with c2:
+            st.write(f"**{name or 'Usuario'}**")
+            st.caption(email)
+
+        st.caption("✅ Admin (acceso total)" if is_admin else "👀 Usuario (sin Crear blog)")
+        st.button(":material/logout: Cerrar sesión", on_click=st.logout, use_container_width=True)
+
+
+# ============================================================
 # CSS: SOLO NAVBAR + padding superior
 # ⚠️ CLAVE: NO ocultar el header de Streamlit (si no, no aparece el botón ☰)
 # ============================================================
 NAVBAR_H = 64
-NAVBAR_LEFT_GUTTER = 72  # 👈 espacio reservado para el botón ☰ (prueba 64–84)
+NAVBAR_LEFT_GUTTER = 72  # 👈 espacio reservado para el botón ☰
 
 st.markdown(
     f"""
@@ -74,8 +131,6 @@ st.markdown(
       /* Puedes ocultar menú y footer sin romper sidebar */
       #MainMenu {{visibility: hidden;}}
       footer {{visibility: hidden;}}
-
-      /* NO ocultar header/toolbar o muere el ☰ */
 
       /* Empuja el contenido bajo la navbar */
       .main .block-container {{
@@ -89,17 +144,17 @@ st.markdown(
         left: 0;
         width: {NAVBAR_LEFT_GUTTER}px;
         height: {NAVBAR_H}px;
-        background: transparent;          /* puedes poner white si quieres */
-        z-index: 999998;                 /* debajo de la navbar */
+        background: transparent;
+        z-index: 999998;
         border-bottom: 1px solid rgba(0,0,0,0.06);
-        pointer-events: none;            /* no bloquea clicks */
+        pointer-events: none;
       }}
 
       /* ====== NAVBAR (empieza DESPUÉS del ☰) ====== */
       .fv-topbar {{
         position: fixed;
         top: 0;
-        left: {NAVBAR_LEFT_GUTTER}px;    /* 👈 aquí está la clave */
+        left: {NAVBAR_LEFT_GUTTER}px;
         right: 0;
         height: {NAVBAR_H}px;
         background: #0f607a;
@@ -174,6 +229,7 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+
 # ============================================================
 # THEME FIX GLOBAL:
 # - Dark: se queda como está
@@ -181,16 +237,10 @@ st.markdown(
 # ============================================================
 st.markdown("""
 <style>
-
-/* ================================
-   MODO CLARO (light)
-   ================================ */
 body[data-theme="light"] {
     --fv-text-main: #0f172a;
     --fv-text-secondary: #1f2933;
 }
-
-/* Texto general */
 body[data-theme="light"] p,
 body[data-theme="light"] span,
 body[data-theme="light"] div,
@@ -204,62 +254,41 @@ body[data-theme="light"] h5,
 body[data-theme="light"] h6 {
     color: #0f172a !important;
 }
-
-/* Markdown */
 body[data-theme="light"] .stMarkdown,
 body[data-theme="light"] .stMarkdown * {
     color: #0f172a !important;
 }
-
-/* Inputs, selects, widgets */
 body[data-theme="light"] input,
 body[data-theme="light"] textarea,
 body[data-theme="light"] select {
     color: #0f172a !important;
 }
-
-/* Sidebar en modo claro */
 body[data-theme="light"] section[data-testid="stSidebar"] {
     color: #0f172a !important;
 }
-
-/* Dataframes */
 body[data-theme="light"] .dataframe,
 body[data-theme="light"] table {
     color: #0f172a !important;
 }
-
-/* ================================
-   MODO OSCURO (dark)
-   No tocamos nada: usa tu diseño actual
-   ================================ */
 </style>
 """, unsafe_allow_html=True)
 
 # ============================================================
 # FIX ROBUSTO: el botón ☰ del sidebar NO queda tapado por tu navbar
-# - Lo bajamos justo debajo del navbar
-# - Aseguramos z-index alto
-# - Ajustamos el panel sidebar para que su contenido no quede oculto arriba
 # ============================================================
 st.markdown(
     f"""
     <style>
-      /* Botón ☰ (toggle del sidebar) */
       [data-testid="stSidebarNavButton"] {{
           position: fixed !important;
-          top: {NAVBAR_H + 12}px !important;   /* 👈 debajo de navbar */
+          top: {NAVBAR_H + 12}px !important;
           left: 12px !important;
           z-index: 1000001 !important;
       }}
-
-      /* Sidebar: que empiece bajo el navbar */
       section[data-testid="stSidebar"] {{
           top: {NAVBAR_H}px !important;
           height: calc(100vh - {NAVBAR_H}px) !important;
       }}
-
-      /* A veces Streamlit mete padding; lo reforzamos */
       section[data-testid="stSidebar"] > div {{
           padding-top: 10px !important;
       }}
@@ -267,133 +296,48 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+
 # ============================================================
 # RESPONSIVE FIX (PC / Tablet / Móvil)
-# - Reduce navbar, separaciones y tipografías en pantallas chicas
-# - Evita desbordes horizontales
-# - Ajusta Home cards y textos
 # ============================================================
 st.markdown("""
 <style>
-/* Evitar scroll horizontal por elementos anchos */
-html, body {
-  max-width: 100%;
-  overflow-x: hidden;
-}
+html, body { max-width: 100%; overflow-x: hidden; }
 
-/* Hacer que el contenedor no quede apretado en móvil */
 .main .block-container {
   padding-left: 1rem !important;
   padding-right: 1rem !important;
 }
 
-/* Links de la navbar: más compactos por defecto (sin cambiar tu look) */
-.fv-link { 
-  padding: 8px 10px;
-}
+.fv-link { padding: 8px 10px; }
 
-/* =========================================
-   TABLET (<= 1024px)
-   ========================================= */
 @media (max-width: 1024px) {
-  .fv-topbar-inner {
-    padding: 0 16px !important;
-  }
-  .fv-links {
-    gap: 10px !important;
-  }
-  .fv-link {
-    font-size: 13px !important;
-    padding: 7px 8px !important;
-  }
-
-  /* Home: cards (si tu CSS define 3 columnas, aquí forzamos 2) */
-  .cards-section {
-    grid-template-columns: repeat(2, 1fr) !important;
-    padding: 1.25rem 1rem 1.75rem !important;
-  }
-
-  /* Home: títulos más chicos */
+  .fv-topbar-inner { padding: 0 16px !important; }
+  .fv-links { gap: 10px !important; }
+  .fv-link { font-size: 13px !important; padding: 7px 8px !important; }
+  .cards-section { grid-template-columns: repeat(2, 1fr) !important; padding: 1.25rem 1rem 1.75rem !important; }
   .hero-left-title { font-size: 2.0rem !important; }
   .hero-right-title { font-size: 1.5rem !important; }
 }
 
-/* =========================================
-   MÓVIL (<= 768px)
-   ========================================= */
 @media (max-width: 768px) {
-
-  /* Navbar: más baja y compacta */
-  .fv-topbar {
-    height: 56px !important;
-  }
-  .fv-topbar-inner {
-    padding: 0 12px !important;
-    gap: 10px !important;
-    grid-template-columns: 1fr !important;  /* marca arriba, links abajo */
-  }
-
-  /* Marca centrada */
-  .fv-brand {
-    display: block;
-    text-align: center;
-    font-size: 18px !important;
-    margin-top: 6px;
-  }
-
-  /* Links: permiten wrap (saltos de línea) */
-  .fv-links {
-    justify-content: center !important;
-    flex-wrap: wrap !important;
-    gap: 8px !important;
-    padding-bottom: 8px;
-  }
-  .fv-link {
-    font-size: 12px !important;
-    padding: 6px 8px !important;
-    border-radius: 10px !important;
-  }
-
-  /* Ajuste: si cambiaste NAVBAR_H en Python, el padding se descalza.
-     Como tu navbar real queda a 56px, empujamos el contenido para que no se solape. */
-  .main .block-container {
-    padding-top: 86px !important;
-  }
-
-  /* Botón ☰ del sidebar: más arriba para móviles */
-  [data-testid="stSidebarNavButton"] {
-    top: 68px !important;
-    left: 10px !important;
-    transform: scale(0.95);
-  }
-
-  /* Home: columnas -> una sola */
-  .cards-section {
-    grid-template-columns: 1fr !important;
-    padding: 1rem !important;
-  }
-
-  /* Home: texto más compacto */
-  .hero-left-text, .hero-right-text {
-    text-align: center !important;
-    padding: 0 !important;
-  }
+  .fv-topbar { height: 56px !important; }
+  .fv-topbar-inner { padding: 0 12px !important; gap: 10px !important; grid-template-columns: 1fr !important; }
+  .fv-brand { display: block; text-align: center; font-size: 18px !important; margin-top: 6px; }
+  .fv-links { justify-content: center !important; flex-wrap: wrap !important; gap: 8px !important; padding-bottom: 8px; }
+  .fv-link { font-size: 12px !important; padding: 6px 8px !important; border-radius: 10px !important; }
+  .main .block-container { padding-top: 86px !important; }
+  [data-testid="stSidebarNavButton"] { top: 68px !important; left: 10px !important; transform: scale(0.95); }
+  .cards-section { grid-template-columns: 1fr !important; padding: 1rem !important; }
+  .hero-left-text, .hero-right-text { text-align: center !important; padding: 0 !important; }
   .hero-left-title { font-size: 1.6rem !important; }
   .hero-right-title { font-size: 1.25rem !important; }
-
-  /* Imágenes en la grilla: reduce márgenes para no cortar */
   .images-showcase-center { max-width: 100% !important; }
   .img-card { border-radius: 16px !important; }
 }
 
-/* =========================================
-   MÓVIL CHICO (<= 420px)
-   ========================================= */
 @media (max-width: 420px) {
-  .fv-link {
-    font-size: 11px !important;
-    padding: 6px 7px !important;
-  }
+  .fv-link { font-size: 11px !important; padding: 6px 7px !important; }
   .hero-left-title { font-size: 1.35rem !important; }
   .hero-right-title { font-size: 1.1rem !important; }
 }
@@ -401,14 +345,16 @@ html, body {
 """, unsafe_allow_html=True)
 
 
-def render_navbar(active: str):
+def render_navbar(active: str, show_crear_blog: bool):
     def cls(name: str) -> str:
         return "fv-link active" if active == name else "fv-link"
 
     def href(p: str) -> str:
-        # Si estás deploy en root, esto funciona.
-        # Si tu app está en un subpath, cámbialo a: return f"?page={quote(p)}"
         return f"/?page={quote(p)}"
+
+    crear_blog_link = ""
+    if show_crear_blog:
+        crear_blog_link = f'<a class="{cls("Crear blog")}" href="{href("Crear blog")}">Crear blog</a>'
 
     st.markdown(
         f"""
@@ -421,7 +367,7 @@ def render_navbar(active: str):
               <a class="{cls("Análisis de Datos")}" href="{href("Análisis de Datos")}">Análisis de Datos</a>
               <a class="{cls("Mapas")}" href="{href("Mapas")}">Mapas</a>
               <a class="{cls("Cargar Data")}" href="{href("Cargar Data")}">Cargar Data</a>
-              <a class="{cls("Crear blog")}" href="{href("Crear blog")}">Crear blog</a>
+              {crear_blog_link}
             </div>
           </div>
         </div>
@@ -431,7 +377,7 @@ def render_navbar(active: str):
 
 
 # ============================================================
-# TU INICIO (Home) — tal cual lo pegaste
+# TU INICIO (Home) — intacto + CTA login en zona verde
 # ============================================================
 HOME_CSS = """
 <style>
@@ -582,11 +528,32 @@ HOME_CSS = """
     .cards-section { grid-template-columns: 1fr; }
     .hero-left-text, .hero-right-text { text-align: center; padding: 0; }
 }
+
+/* ===== BLOQUE LOGIN (zona verde) ===== */
+.fv-login-cta {
+  max-width: 920px;
+  margin: 0.4rem auto 0.9rem;
+  padding: 1.1rem 1.2rem;
+  border-radius: 16px;
+  background: rgba(21, 25, 35, 0.70);
+  border: 1px solid rgba(99, 102, 241, 0.28);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 18px 60px rgba(0,0,0,0.35);
+}
+.fv-login-cta p{
+  margin: 0;
+  font-family:'Inter',sans-serif;
+  font-size: 1.02rem;
+  color: #94a3b8;
+  line-height: 1.7;
+  text-align: center;
+}
+.fv-login-cta strong{ color: #ffffff; }
 </style>
 """
 
 
-def render_home():
+def render_home(logged_in: bool, email: str, name: str, is_admin: bool):
     st.markdown(HOME_CSS, unsafe_allow_html=True)
     st.markdown('<div class="home-page">', unsafe_allow_html=True)
 
@@ -609,7 +576,6 @@ def render_home():
         ext = p.suffix.lower().replace(".", "")
         if ext == "jpg":
             ext = "jpeg"
-        import base64
         return f"data:image/{ext};base64,{base64.b64encode(p.read_bytes()).decode('utf-8')}"
 
     def render_img(path: str, placeholder: str):
@@ -650,21 +616,53 @@ def render_home():
             unsafe_allow_html=True,
         )
 
+    # Título central
     st.markdown(
         """
-        <div style="text-align:center; padding: 2.2rem 2rem 0.5rem;">
+        <div style="text-align:center; padding: 2.2rem 2rem 0.35rem;">
             <h2 style="font-family:'Space Grotesk',sans-serif; font-size: 3rem; font-weight: 700; color: white; margin: 0;">
                 Bienvenidos a FV Consulting
             </h2>
-            <p style="font-family:'Inter',sans-serif; font-size: 1.1rem; color: #94a3b8; margin-top: 0.9rem; line-height:1.7;">
-                Una plataforma integral que combina investigación, análisis de datos, visualización avanzada y carga de documentos
-                para ofrecer soluciones completas y eficientes.
-            </p>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
+    # ===== CTA Login (zona verde) =====
+    if not logged_in:
+        st.markdown(
+            """
+            <div class="fv-login-cta">
+              <p>
+                <strong>Inicia sesión</strong> para usar las aplicaciones de <strong>FV Consulting</strong>.<br/>
+                Si tu correo es <strong>@fvagconsulting.com</strong>, tendrás acceso total, incluyendo <strong>Crear blog</strong>.
+              </p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        b1, b2, b3 = st.columns([2, 1.3, 2])
+        with b2:
+            st.button(
+                ":material/login: Iniciar sesión con Google",
+                on_click=st.login,
+                use_container_width=True,
+                key="home_login_btn",
+            )
+    else:
+        st.markdown(
+            f"""
+            <div class="fv-login-cta">
+              <p>
+                ✅ Sesión iniciada como <strong>{name or "Usuario"}</strong> (<strong>{email}</strong>).<br/>
+                {"🟢 Eres <strong>Admin</strong>: acceso total." if is_admin else "🔒 Acceso a todas las apps, excepto <strong>Crear blog</strong>."}
+              </p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    # Cards
     st.markdown('<div class="cards-section">', unsafe_allow_html=True)
 
     c1, c2, c3 = st.columns(3)
@@ -762,7 +760,12 @@ def render_home():
             unsafe_allow_html=True,
         )
         if st.button("Explorar →", key="home_crear_blog", use_container_width=True):
-            goto("Crear blog")
+            if not logged_in:
+                st.warning("Primero inicia sesión para continuar.")
+            elif not is_admin:
+                st.error("Tu cuenta no tiene permisos para crear publicaciones.")
+            else:
+                goto("Crear blog")
 
     st.markdown("</div>", unsafe_allow_html=True)  # cards-section
     st.markdown("</div>", unsafe_allow_html=True)  # home-page
@@ -772,15 +775,32 @@ def render_home():
 # ROUTER PRINCIPAL
 # ============================================================
 def main():
-    render_navbar(page)
+    logged_in, email, name, picture, is_admin = auth_state()
+
+    # Navbar: ocultar "Crear blog" si no es admin
+    render_navbar(page, show_crear_blog=is_admin)
+
+    # Sidebar: si hay sesión, mostrar usuario + logout
+    render_user_sidebar(logged_in, email, name, picture, is_admin)
 
     if page == "Inicio":
-        render_home()
+        render_home(logged_in, email, name, is_admin)
 
     elif page == "Blog":
         boletines_app()
 
     elif page == "Crear blog":
+        # ✅ Si NO ha iniciado sesión, pedir login
+        if not logged_in:
+            st.warning("Debes iniciar sesión para acceder a esta sección.")
+            st.button(":material/login: Iniciar sesión con Google", on_click=st.login)
+            st.stop()
+
+        # ✅ Solo restringimos a NO-admin (admin = acceso total)
+        if not is_admin:
+            st.error("Acceso denegado: solo cuentas @fvagconsulting.com pueden crear publicaciones.")
+            st.stop()
+
         if crear_blog_app is None:
             st.error("No pude importar crear_blog.py. Revisa que exista y que tenga crear_blog_app() o main().")
         else:
