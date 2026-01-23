@@ -22,7 +22,7 @@ LIST_IMG_WIDTH = 320
 LIST_ROW_MIN_HEIGHT = 150
 LIST_POST_GAP_PX = 14
 
-# Detalle (imágenes dentro del post)
+# img en los pst
 DETAIL_MAX_IMG_WIDTH = 760
 DETAIL_COVER_MAX_WIDTH = 900
 
@@ -44,6 +44,9 @@ def save_index(items):
 
 
 def delete_post(post_id: str):
+    """
+    Se mantiene por compatibilidad, pero NO se usa en el UI (botón eliminado).
+    """
     items = [x for x in load_index() if x.get("id") != post_id]
     save_index(items)
     post_dir = BLOG_DIR / post_id
@@ -51,21 +54,6 @@ def delete_post(post_id: str):
         shutil.rmtree(post_dir, ignore_errors=True)
 
 
-def zip_folder(folder: Path) -> bytes:
-    buf = io.BytesIO()
-    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
-        for root, _, files in os.walk(folder):
-            for name in files:
-                p = Path(root) / name
-                arc = p.relative_to(folder).as_posix()
-                z.write(p, arcname=arc)
-    buf.seek(0)
-    return buf.getvalue()
-
-
-# =============================
-# HELPERS: portada embebida
-# =============================
 def _guess_mime_from_suffix(p: Path) -> str:
     suf = p.suffix.lower().replace(".", "")
     if suf in ["jpg", "jpeg"]:
@@ -85,7 +73,7 @@ def _img_to_b64(path: Path) -> str:
 
 
 # =============================
-# MARKDOWN RENDER (completo)
+# 
 # =============================
 def render_md_with_local_images(md_text: str, base_dir: Path):
     md = md_text or ""
@@ -102,11 +90,21 @@ def render_md_with_local_images(md_text: str, base_dir: Path):
 
         img_path = (base_dir / rel).resolve()
         if img_path.exists() and img_path.is_file():
-            st.image(
-                str(img_path),
-                caption=alt if alt else None,
-                width=DETAIL_MAX_IMG_WIDTH,
-            )
+            b64 = _img_to_b64(img_path)
+            if b64:
+                mime = _guess_mime_from_suffix(img_path)
+                caption_html = f"<figcaption>{alt}</figcaption>" if alt else ""
+                st.markdown(
+                    f"""
+                    <figure class="paper-figure">
+                      <img src="data:{mime};base64,{b64}" alt="{alt}">
+                      {caption_html}
+                    </figure>
+                    """,
+                    unsafe_allow_html=True,
+                )
+            else:
+                st.warning(f"⚠️ No se pudo leer la imagen: {rel}")
         else:
             st.warning(f"⚠️ No se encuentra la imagen: {rel}")
             st.markdown(md[m.start():m.end()], unsafe_allow_html=True)
@@ -119,7 +117,7 @@ def render_md_with_local_images(md_text: str, base_dir: Path):
 
 
 # =============================
-# NAV simple interno (detalle/listado)
+# NAV interno (detalle/listado)
 # =============================
 def goto_page(page_name: str):
     st.session_state["page"] = page_name
@@ -163,19 +161,21 @@ def get_post_categories(post):
 
 
 # =============================
-# CSS (SOLO ESTILOS DEL BLOG)
-# ✅ NO oculta sidebar
-# ✅ NO crea topbar propia
-# ✅ NO cambia padding-top (eso lo maneja app.py)
+# CSS — ancho galeria blog
 # =============================
 def blog_css():
     st.markdown(
         f"""
         <style>
-        /* =========================
-           BLOG: colores automáticos
-           - Se adapta al tema/fondo
-           ========================= */
+        /* ✅ IMPORTANTE: en Streamlit 1.52.2 el CSS persiste entre "páginas"
+           Por eso aquí "reseteamos" el contenedor del listado a ancho completo */
+        div.block-container {{
+            max-width: none !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+            padding-left: 2.2rem !important;
+            padding-right: 2.2rem !important;
+        }}
 
         .blog-title {{
             font-size: 44px;
@@ -201,14 +201,14 @@ def blog_css():
             font-weight: 800;
             margin: 0 0 6px 0;
             line-height: 1.15;
-            color: inherit; /* ✅ automático */
+            color: inherit;
         }}
 
         .post-meta {{
             font-size: 13px;
             margin: 4px 0;
             line-height: 1.4;
-            color: rgba(127,127,127,0.9); /* ✅ neutro, funciona en ambos fondos */
+            color: rgba(127,127,127,0.9);
         }}
 
         .tag {{
@@ -218,7 +218,7 @@ def blog_css():
             border-radius: 6px;
             border: 1px solid rgba(127,127,127,0.35);
             background: rgba(127,127,127,0.08);
-            color: inherit; /* ✅ automático */
+            color: inherit;
             width: fit-content;
             margin: 6px 0 8px 0;
         }}
@@ -229,8 +229,8 @@ def blog_css():
             max-height: 66px;
             overflow: hidden;
             margin: 8px 0 10px 0;
-            color: inherit;       /* ✅ automático */
-            opacity: 0.85;        /* ✅ suaviza en ambos fondos */
+            color: inherit;
+            opacity: 0.85;
         }}
 
         .post-img {{
@@ -247,7 +247,6 @@ def blog_css():
             display: block;
         }}
 
-        /* Inputs: dejamos estilo limpio sin forzar blanco absoluto */
         div[data-baseweb="select"] > div {{
             border-radius: 10px !important;
         }}
@@ -260,7 +259,93 @@ def blog_css():
             font-size: 17px;
             margin-top: 10px;
             margin-bottom: 12px;
-            color: inherit; /* ✅ automático */
+            color: inherit;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+# =============================
+# CSS — ver blog
+# =============================
+def blog_detail_css():
+    st.markdown(
+        f"""
+        <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap');
+
+        /* Contenedor tipo paper */
+        div.block-container {{
+            max-width: 1050px !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+            padding-left: 2.0rem !important;
+            padding-right: 2.0rem !important;
+        }}
+
+        /* Tipografía y justificado */
+        .stMarkdown {{
+            font-family: "Source Serif 4", Georgia, "Times New Roman", serif !important;
+            font-size: 17px !important;
+            line-height: 1.78 !important;
+            letter-spacing: 0.1px;
+            text-align: justify !important;
+            text-justify: inter-word;
+        }}
+
+        /* Títulos centrados */
+        .stMarkdown h1, .stMarkdown h2, .stMarkdown h3,
+        .stMarkdown h4, .stMarkdown h5, .stMarkdown h6 {{
+            font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif !important;
+            letter-spacing: -0.01em;
+            line-height: 1.18;
+            margin-top: 1.6rem;
+            margin-bottom: 0.8rem;
+            text-align: center !important;
+        }}
+
+        /* Figuras centradas */
+        figure.paper-figure {{
+            margin: 18px auto !important;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }}
+        figure.paper-figure img {{
+            max-width: {DETAIL_MAX_IMG_WIDTH}px;
+            width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }}
+        figure.paper-figure figcaption {{
+            font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif !important;
+            font-size: 13px !important;
+            opacity: 0.85;
+            text-align: center !important;
+            margin-top: 6px;
+            max-width: {DETAIL_MAX_IMG_WIDTH}px;
+        }}
+
+        /* Tablas centradas como bloque */
+        .stMarkdown table {{
+            margin-left: auto !important;
+            margin-right: auto !important;
+            margin-top: 18px;
+            margin-bottom: 18px;
+            width: auto;
+            max-width: 100%;
+            border-collapse: collapse;
+        }}
+
+        /* Celdas alineadas a la izquierda */
+        .stMarkdown th,
+        .stMarkdown td {{
+            text-align: left !important;
+            vertical-align: top !important;
         }}
         </style>
         """,
@@ -284,12 +369,11 @@ def filter_posts_by_keywords(posts, query):
 
 
 # =============================
-# BLOG (LISTADO)
+# BLOG 
 # =============================
 def page_blog():
     blog_css()
 
-    st.session_state.setdefault("confirm_delete_blog_id", None)
     st.session_state.setdefault("blog_selected_cat", "Todos")
     st.session_state.setdefault("blog_order", "Fecha (más reciente)")
     st.session_state.setdefault("blog_filter", "")
@@ -303,7 +387,7 @@ def page_blog():
 
         a, b = st.columns([1.2, 1.6], vertical_alignment="bottom")
         with a:
-            st.write("**Ordar por:**")
+            st.write("**Ordenar por:**")
             order = st.selectbox(
                 "",
                 ["Fecha (más reciente)", "Fecha (más antigua)", "Título (A→Z)", "Título (Z→A)"],
@@ -377,26 +461,10 @@ def page_blog():
                 if desc:
                     st.markdown(f'<div class="post-excerpt">{desc}</div>', unsafe_allow_html=True)
 
-                b1, b2, _ = st.columns([1, 1, 6])
-                if b1.button("Ver", key=f"view_{post_id}", use_container_width=True):
+                if st.button("Ver", key=f"view_{post_id}", use_container_width=True):
                     st.session_state["selected_post_id"] = post_id
                     goto_page("Detalle")
                     st.rerun()
-
-                if b2.button("🗑️", key=f"del_{post_id}", use_container_width=True):
-                    st.session_state["confirm_delete_blog_id"] = post_id
-                    st.rerun()
-
-                if st.session_state.get("confirm_delete_blog_id") == post_id:
-                    st.warning("¿Eliminar?")
-                    cA, cB = st.columns(2)
-                    if cA.button("✅ Sí", key=f"yes_{post_id}", use_container_width=True):
-                        delete_post(post_id)
-                        st.session_state["confirm_delete_blog_id"] = None
-                        st.rerun()
-                    if cB.button("❌ No", key=f"no_{post_id}", use_container_width=True):
-                        st.session_state["confirm_delete_blog_id"] = None
-                        st.rerun()
 
             with right:
                 cover = (post.get("cover", "") or "").strip()
@@ -437,10 +505,10 @@ def page_blog():
 
 
 # =============================
-# DETALLE
+# DETALLEs
 # =============================
 def page_detail():
-    blog_css()
+    blog_detail_css()
 
     post_id = st.session_state.get("selected_post_id")
     if not post_id:

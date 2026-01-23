@@ -87,9 +87,11 @@ The table is presented in three panels:
 
 In Panel 1, for example, when the farmer pays $0.60 and receives $0.50 in indemnity, the implied rate of return on farmer-paid premium is −17%. The **effective premium subsidy rate** captures the share of total premium that ultimately accrues to the farmer once indemnities are realized:
 
-\[
-\text{Effective subsidy rate} = \frac{\text{Indemnity} - \text{Farmer premium}}{\text{Total premium}}
-\]
+$$
+\text{Effective subsidy rate}
+=
+\frac{\text{Indemnity} - \text{Farmer premium}}{\text{Total premium}}
+$$
 
 This equals the stated subsidy rate **if and only if** the loss ratio equals 1.0. When loss ratios depart from 1.0, effective subsidy rates can diverge sharply from stated subsidy schedules.
 

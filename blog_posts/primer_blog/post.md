@@ -1,4 +1,3 @@
-
 # Drought, Low River Water Levels, and Local Soybean Markets: The Role of Physical and Economic Distance
 
 **Ivan Flores and Joe Janzen**  
@@ -104,14 +103,14 @@ We consider two measures of relative prices among soybean markets in the US: the
 
 |  | 2021 | 2022 | Change |
 |---|---:|---:|---:|
-| **Price levels (in $/bushel)** |  |  |  |
+| **Price levels (in \$/bushel)** |  |  |  |
 | Nearby futures price | 12.30 | 13.81 | 1.51 |
 | Gulf export bid | 13.19 | 15.92 | 2.73 |
 | **Production-weighted average price difference** |  |  |  |
 | Spot-futures | -0.44 | -0.53 | -0.09 |
 | Spot-Gulf | -1.29 | -2.63 | -1.34 |
 
-Table 2 illustrates the dramatic combined impact of drought, river transport disruptions, and strong demand for US soybeans on prices observed in fall 2022. Soybean price levels were higher in fall 2022 than in fall 2021, but the price change was especially pronounced at Gulf export terminals. The average nearby futures price was $13.81/bushel, or $1.51/bushel higher than the year prior, while Gulf export bids were $15.92/bushel, or $2.73 higher than the year prior. Table 2 also shows that values at inland locations did not increase nearly as much as the price at the Gulf; the economic distance between these points widened to account for higher transportation costs. To summarize this change, we calculate the production-weighted average across all locations of the spot-futures and spot-Gulf price differences. Production-weighting ensures that we do not overweight areas with relatively high or low prices (that is, relatively strong or weak basis) but little production. Average spot-futures basis weakened by 9 cents per bushel, while the average spot-Gulf price difference was $1.34/bushel lower.
+Table 2 illustrates the dramatic combined impact of drought, river transport disruptions, and strong demand for US soybeans on prices observed in fall 2022. Soybean price levels were higher in fall 2022 than in fall 2021, but the price change was especially pronounced at Gulf export terminals. The average nearby futures price was \$13.81/bushel, or \$1.51/bushel higher than the year prior, while Gulf export bids were \$15.92/bushel, or \$2.73 higher than the year prior. Table 2 also shows that values at inland locations did not increase nearly as much as the price at the Gulf; the economic distance between these points widened to account for higher transportation costs. To summarize this change, we calculate the production-weighted average across all locations of the spot-futures and spot-Gulf price differences. Production-weighting ensures that we do not overweight areas with relatively high or low prices (that is, relatively strong or weak basis) but little production. Average spot-futures basis weakened by 9 cents per bushel, while the average spot-Gulf price difference was \$1.34/bushel lower.
 
 ---
 
@@ -124,7 +123,7 @@ Table 2 illustrates the dramatic combined impact of drought, river transport dis
 
 ---
 
-To fully visualize how local markets responded to conditions in fall 2022, we map in Figure 5 the change in the spot-Gulf price difference between 2021 and 2022 (i.e. the difference between values in Panels A and B of Figure 4). The largest differences are clearly observed along the lower Mississippi River and in areas of southern Illinois, Indiana, Kentucky, and Missouri near major rivers. Spot-Gulf price differences were up to $2.20/bushel lower in 2022 relative to 2021. The smallest changes are observed in areas where 2022 production was most affected by drought such as Kansas and Nebraska. There the spot-Gulf price difference was about $0.60–1.00/bushel lower.
+To fully visualize how local markets responded to conditions in fall 2022, we map in Figure 5 the change in the spot-Gulf price difference between 2021 and 2022 (i.e. the difference between values in Panels A and B of Figure 4). The largest differences are clearly observed along the lower Mississippi River and in areas of southern Illinois, Indiana, Kentucky, and Missouri near major rivers. Spot-Gulf price differences were up to \$2.20/bushel lower in 2022 relative to 2021. The smallest changes are observed in areas where 2022 production was most affected by drought such as Kansas and Nebraska. There the spot-Gulf price difference was about \$0.60–\$1.00/bushel lower.
 
 ---
 
@@ -143,7 +142,7 @@ To fully visualize how local markets responded to conditions in fall 2022, we ma
 
 **Note:** Production-weighted kernel density of observed spot-Gulf price differences.
 
-Figure 6 provides an alternative view of the distribution of the spot-Gulf price discount at harvest-time for the past two years. In 2022, the distribution shifts to the left (as suggested by the change in averages shown in Table 2). The range spanned by distribution also widened substantially. For 2021, most local spot prices fell in a range from about $-0.90 to $-1.90 relative to the Gulf price. In 2022, the range of the distribution is larger: from about $1.80 to $3.30 below the Gulf price.
+Figure 6 provides an alternative view of the distribution of the spot-Gulf price discount at harvest-time for the past two years. In 2022, the distribution shifts to the left (as suggested by the change in averages shown in Table 2). The range spanned by distribution also widened substantially. For 2021, most local spot prices fell in a range from about \$-0.90 to \$-1.90 relative to the Gulf price. In 2022, the range of the distribution is larger: from about \$1.80 to \$3.30 below the Gulf price.
 
 ---
 
@@ -165,6 +164,3 @@ Gerveni, M., T. Hubbs and S. Irwin. “Biodiesel and Renewable Diesel: It’s Al
 
 Plume, K. “New Processors to Reshape North Dakota’s Export-Focused Soy Sector.” Reuters, November 14, 2022.  
 https://www.reuters.com/markets/commodities/new-processors-reshape-north-dakotas-export-focused-soy-sector-2022-11-14/
-
-
-[def]: images/figure_4.png
