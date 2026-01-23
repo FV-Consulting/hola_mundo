@@ -1,13 +1,5 @@
 # ============================================================
-# app.py — FV Consulting (Navbar azul + Home intacto + SIDEBAR FUNCIONAL)
-# + Login Google en el HOME (zona verde) + Roles por dominio
-#
-# ✅ Botón de login en el HOME (zona verde)
-# ✅ Botones "Explorar →" se habilitan SOLO tras iniciar sesión
-# ✅ Router bloquea todas las páginas (excepto Inicio) si no hay sesión
-# ✅ SOLO @fvagconsulting.com puede "Crear blog" (admin usa TODO)
-# ✅ Sidebar plegable muestra foto + correo + logout al iniciar sesión
-# ✅ FIX: elimina el </div> suelto (wrappers HTML incompatibles con Streamlit)
+# app.py — FV Consulting (con estetica)
 # ============================================================
 
 from pathlib import Path
@@ -19,7 +11,7 @@ from PIL import Image
 import requests
 
 # ----------------------------
-# Imports de tus apps
+# Importar apps
 # ----------------------------
 from cargar_documentos import cargar_documentos
 from data import data_multiple
@@ -52,7 +44,7 @@ st.set_page_config(
 )
 
 # ----------------------------
-# Router por query params
+#
 # ----------------------------
 qp = st.query_params
 page = qp.get("page", "Inicio")
@@ -64,8 +56,11 @@ def goto(page_name: str):
 
 
 # ============================================================
-# AUTH HELPERS (Streamlit Cloud)
+# Streamlit Cloud
 # ============================================================
+FV_DOMAIN = "@fvagconsulting.com"
+
+
 def auth_state():
     """
     Devuelve:
@@ -73,7 +68,7 @@ def auth_state():
       email: str
       name: str
       picture: str
-      is_admin: bool  (solo dominio fvagconsulting.com)
+      is_fv: bool  (solo dominio fvagconsulting.com)
     """
     if not hasattr(st, "user") or not hasattr(st.user, "is_logged_in"):
         return False, "", "", "", False
@@ -82,14 +77,14 @@ def auth_state():
     if not logged_in:
         return False, "", "", "", False
 
-    email = st.user.email or ""
-    name = st.user.name or ""
-    picture = st.user.picture or ""
-    is_admin = email.lower().endswith("@fvagconsulting.com") if email else False
-    return logged_in, email, name, picture, is_admin
+    email = (st.user.email or "").strip()
+    name = (st.user.name or "").strip()
+    picture = (st.user.picture or "").strip()
+    is_fv = email.lower().endswith(FV_DOMAIN) if email else False
+    return logged_in, email, name, picture, is_fv
 
 
-def render_user_sidebar(logged_in: bool, email: str, name: str, picture: str, is_admin: bool):
+def render_user_sidebar(logged_in: bool, email: str, name: str, picture: str, is_fv: bool):
     if not logged_in:
         return
 
@@ -114,12 +109,16 @@ def render_user_sidebar(logged_in: bool, email: str, name: str, picture: str, is
             st.write(f"**{name or 'Usuario'}**")
             st.caption(email)
 
-        st.caption("✅ Admin (acceso total)" if is_admin else "👀 Usuario (sin Crear blog)")
+        if is_fv:
+            st.caption("🟢 Acceso FV (@fvagconsulting.com)")
+        else:
+            st.caption("🟠 Sesión iniciada, pero sin acceso FV")
+
         st.button(":material/logout: Cerrar sesión", on_click=st.logout, use_container_width=True)
 
 
 # ============================================================
-# CSS: NAVBAR + padding superior
+# CSS
 # ============================================================
 NAVBAR_H = 64
 NAVBAR_LEFT_GUTTER = 72  # espacio reservado para el ☰
@@ -219,9 +218,10 @@ st.markdown(
 )
 
 # ============================================================
-# THEME FIX GLOBAL (modo claro)
+# modo claro
 # ============================================================
-st.markdown("""
+st.markdown(
+    """
 <style>
 body[data-theme="light"] {
     --fv-text-main: #0f172a;
@@ -257,10 +257,12 @@ body[data-theme="light"] table {
     color: #0f172a !important;
 }
 </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 # ============================================================
-# FIX: botón ☰ del sidebar NO queda tapado por navbar
+# botón del sidebar NO queda tapado por navbar
 # ============================================================
 st.markdown(
     f"""
@@ -284,9 +286,10 @@ st.markdown(
 )
 
 # ============================================================
-# RESPONSIVE FIX (igual que tu estilo)
+# 
 # ============================================================
-st.markdown("""
+st.markdown(
+    """
 <style>
 html, body { max-width: 100%; overflow-x: hidden; }
 .main .block-container { padding-left: 1rem !important; padding-right: 1rem !important; }
@@ -321,7 +324,9 @@ html, body { max-width: 100%; overflow-x: hidden; }
   .hero-right-title { font-size: 1.1rem !important; }
 }
 </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 
 def render_navbar(active: str, show_crear_blog: bool):
@@ -331,7 +336,6 @@ def render_navbar(active: str, show_crear_blog: bool):
     def href(p: str) -> str:
         return f"/?page={quote(p)}"
 
-    # ✅ Armamos los links como lista (nada de insertar HTML suelto)
     links = [
         f'<a class="{cls("Inicio")}" href="{href("Inicio")}">Inicio</a>',
         f'<a class="{cls("Blog")}" href="{href("Blog")}">Blog</a>',
@@ -361,7 +365,7 @@ def render_navbar(active: str, show_crear_blog: bool):
 
 
 # ============================================================
-# HOME (misma estética) + CTA Login en zona verde
+# HOME 
 # ============================================================
 HOME_CSS = """
 <style>
@@ -375,7 +379,6 @@ HOME_CSS = """
     --accent: #6366f1;
 }
 
-/* ===== HOME WRAPPER (sin div abierto/cerrado) ===== */
 div[data-testid="stVerticalBlock"]:has(#fv-home-anchor) {
     background: #0a0e1a;
     color: white;
@@ -384,7 +387,6 @@ div[data-testid="stVerticalBlock"]:has(#fv-home-anchor) {
 }
 #fv-home-anchor { display: none; }
 
-/* ===== Imagenes centro: aplicamos estilo al bloque que contiene el ancla ===== */
 div[data-testid="stVerticalBlock"]:has(#fv-images-anchor) {
     max-width: 600px;
     margin: 0 auto;
@@ -392,7 +394,6 @@ div[data-testid="stVerticalBlock"]:has(#fv-images-anchor) {
 }
 #fv-images-anchor { display:none; }
 
-/* ===== Cards section: aplicamos padding sin div wrapper ===== */
 div[data-testid="stVerticalBlock"]:has(#fv-cards-anchor) {
     padding: 1.5rem 2rem 2.0rem;
 }
@@ -417,7 +418,6 @@ div[data-testid="stVerticalBlock"]:has(#fv-cards-anchor) {
     margin-bottom: 1rem;
 }
 
-/* Tarjetas de imágenes */
 .img-card {
     position: relative;
     border-radius: 20px;
@@ -454,7 +454,6 @@ div[data-testid="stVerticalBlock"]:has(#fv-cards-anchor) {
     transform: translateZ(30px);
 }
 
-/* Service cards */
 .service-card {
     background: rgba(21, 25, 35, 0.8);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -516,7 +515,6 @@ div[data-testid="stVerticalBlock"]:has(#fv-cards-anchor) {
     .hero-left-text, .hero-right-text { text-align: center; padding: 0; }
 }
 
-/* ===== BLOQUE LOGIN (zona verde) ===== */
 .fv-login-cta {
   max-width: 920px;
   margin: 0.4rem auto 0.9rem;
@@ -540,8 +538,7 @@ div[data-testid="stVerticalBlock"]:has(#fv-cards-anchor) {
 """
 
 
-
-def render_home(logged_in: bool, email: str, name: str, is_admin: bool):
+def render_home(logged_in: bool, email: str, name: str, is_fv: bool):
     st.markdown(HOME_CSS, unsafe_allow_html=True)
 
     col_left, col_center, col_right = st.columns([1, 2, 1])
@@ -550,7 +547,7 @@ def render_home(logged_in: bool, email: str, name: str, is_admin: bool):
         st.markdown(
             """
             <div class="hero-left-text">
-                <h2 class="hero-left-title">Informacion, datos, economia y simpleza en un mismo sitio.</h2>
+                <h2 class="hero-left-title">Información, datos, economía y simpleza en un mismo sitio.</h2>
             </div>
             """,
             unsafe_allow_html=True,
@@ -602,7 +599,6 @@ def render_home(logged_in: bool, email: str, name: str, is_admin: bool):
             unsafe_allow_html=True,
         )
 
-    # Título + texto principal
     st.markdown(
         """
         <div style="text-align:center; padding: 2.2rem 2rem 0.35rem;">
@@ -618,20 +614,20 @@ def render_home(logged_in: bool, email: str, name: str, is_admin: bool):
         unsafe_allow_html=True,
     )
 
-    # ===== CTA Login (zona verde) =====
+    # ===== CTA Login (ahora: SOLO para secciones restringidas) =====
     if not logged_in:
         st.markdown(
-            """
+            f"""
             <div class="fv-login-cta">
               <p>
-                <strong>Inicia sesión</strong> para usar las aplicaciones de <strong>FV Consulting</strong>.<br/>
-                Si tu correo es <strong>@fvagconsulting.com</strong>, tendrás acceso total, incluyendo <strong>Crear blog</strong>.
+                Puedes usar <strong>Blog</strong>, <strong>Análisis de Datos</strong> y <strong>Mapas</strong> sin iniciar sesión.<br/>
+                Para acceder a <strong>Cargar Data</strong> y <strong>Crear blog</strong>, debes iniciar sesión con un correo <strong>{FV_DOMAIN}</strong>.
               </p>
             </div>
             """,
             unsafe_allow_html=True,
         )
-        b1, b2, b3 = st.columns([2, 1.3, 2])
+        b1, b2, b3 = st.columns([2, 1.6, 2])
         with b2:
             st.button(
                 ":material/login: Iniciar sesión con Google",
@@ -639,23 +635,37 @@ def render_home(logged_in: bool, email: str, name: str, is_admin: bool):
                 use_container_width=True,
                 key="home_login_btn",
             )
-        st.caption("🔒 Inicia sesión para habilitar los botones “Explorar →”.")
-
     else:
-        st.markdown(
-            f"""
-            <div class="fv-login-cta">
-              <p>
-                ✅ Sesión iniciada como <strong>{name or "Usuario"}</strong> (<strong>{email}</strong>).<br/>
-                {"🟢 Eres <strong>Admin</strong>: acceso total." if is_admin else "✅ Puedes usar las apps. <strong>Crear blog</strong> está restringido."}
-              </p>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+        if is_fv:
+            st.markdown(
+                f"""
+                <div class="fv-login-cta">
+                  <p>
+                    ✅ Sesión iniciada como <strong>{name or "Usuario"}</strong> (<strong>{email}</strong>).<br/>
+                    🟢 Tienes acceso a <strong>Cargar Data</strong> y <strong>Crear blog</strong>.
+                  </p>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+        else:
+            st.markdown(
+                f"""
+                <div class="fv-login-cta">
+                  <p>
+                    ✅ Sesión iniciada como <strong>{name or "Usuario"}</strong> (<strong>{email}</strong>).<br/>
+                    🟠 Este correo no pertenece a <strong>{FV_DOMAIN}</strong>, por lo que <strong>Cargar Data</strong> y <strong>Crear blog</strong> están restringidos.
+                  </p>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
-    # ===== CARDS + BOTONES (ahora se habilitan solo con login) =====
-    can_navigate = logged_in
+    # ===== CARDS + BOTONES =====
+    # Blog / Análisis / Mapas: siempre disponibles
+    # Cargar Data / Crear blog: solo con @fvagconsulting.com
+    can_open_public = True
+    can_open_restricted = bool(is_fv)
 
     c1, c2, c3 = st.columns(3)
     with c1:
@@ -664,8 +674,8 @@ def render_home(logged_in: bool, email: str, name: str, is_admin: bool):
             <div class="service-card">
                 <div class="card-icon">📊</div>
                 <div class="card-category">REPORTES • VISUALIZACIÓN</div>
-                <h3 class="card-title">Blog de Investigación</h3>
-                <p class="card-description">Economía, Agricultura, Finanzas, Econometría y Análisis de datos.</p>
+                <h3 class="card-title">Blog de investigación</h3>
+                <p class="card-description">Economía, agricultura, finanzas, econometría y análisis de datos.</p>
                 <div class="card-tags">
                     <span class="tag">Dashboards</span>
                     <span class="tag">Analytics</span>
@@ -674,7 +684,7 @@ def render_home(logged_in: bool, email: str, name: str, is_admin: bool):
             """,
             unsafe_allow_html=True,
         )
-        if st.button("Explorar →", key="home_blog", use_container_width=True, disabled=not can_navigate):
+        if st.button("Explorar →", key="home_blog", use_container_width=True, disabled=not can_open_public):
             goto("Blog")
 
     with c2:
@@ -683,8 +693,8 @@ def render_home(logged_in: bool, email: str, name: str, is_admin: bool):
             <div class="service-card">
                 <div class="card-icon">📈</div>
                 <div class="card-category">ANALYTICS • ESTADÍSTICA</div>
-                <h3 class="card-title">Análisis de Datos</h3>
-                <p class="card-description">Herramientas para explorar, modelar y visualizar datos cargados previamente.</p>
+                <h3 class="card-title">Análisis de datos</h3>
+                <p class="card-description">Herramientas para explorar, modelar y visualizar datos.</p>
                 <div class="card-tags">
                     <span class="tag">Machine Learning</span>
                     <span class="tag">Predictivo</span>
@@ -693,7 +703,7 @@ def render_home(logged_in: bool, email: str, name: str, is_admin: bool):
             """,
             unsafe_allow_html=True,
         )
-        if st.button("Explorar →", key="home_analisis", use_container_width=True, disabled=not can_navigate):
+        if st.button("Explorar →", key="home_analisis", use_container_width=True, disabled=not can_open_public):
             goto("Análisis de Datos")
 
     with c3:
@@ -702,7 +712,7 @@ def render_home(logged_in: bool, email: str, name: str, is_admin: bool):
             <div class="service-card">
                 <div class="card-icon">🗺️</div>
                 <div class="card-category">MAPAS • ESTADÍSTICA</div>
-                <h3 class="card-title">Análisis Geoespacial</h3>
+                <h3 class="card-title">Análisis geoespacial</h3>
                 <p class="card-description">Visualización de mapas y análisis territorial con datos geoespaciales.</p>
                 <div class="card-tags">
                     <span class="tag">GIS</span>
@@ -712,7 +722,7 @@ def render_home(logged_in: bool, email: str, name: str, is_admin: bool):
             """,
             unsafe_allow_html=True,
         )
-        if st.button("Explorar →", key="home_mapas", use_container_width=True, disabled=not can_navigate):
+        if st.button("Explorar →", key="home_mapas", use_container_width=True, disabled=not can_open_public):
             goto("Mapas")
 
     c4, c5 = st.columns(2)
@@ -732,7 +742,7 @@ def render_home(logged_in: bool, email: str, name: str, is_admin: bool):
             """,
             unsafe_allow_html=True,
         )
-        if st.button("Explorar →", key="home_cargar", use_container_width=True, disabled=not can_navigate):
+        if st.button("Explorar →", key="home_cargar", use_container_width=True, disabled=not can_open_restricted):
             goto("Cargar Data")
 
     with c5:
@@ -751,45 +761,49 @@ def render_home(logged_in: bool, email: str, name: str, is_admin: bool):
             """,
             unsafe_allow_html=True,
         )
-        # Solo admin: habilita navegación real
-        disabled_crear = (not can_navigate) or (can_navigate and not is_admin)
-        if st.button("Explorar →", key="home_crear_blog", use_container_width=True, disabled=disabled_crear):
+        if st.button("Explorar →", key="home_crear_blog", use_container_width=True, disabled=not can_open_restricted):
             goto("Crear blog")
 
+    if (not can_open_restricted) and (not logged_in):
+        st.caption(f"🔒 Para 'Cargar Data' y 'Crear blog' debes iniciar sesión con {FV_DOMAIN}.")
+    elif (logged_in and not is_fv):
+        st.caption(f"🟠 Tu sesión está activa, pero solo {FV_DOMAIN} puede usar 'Cargar Data' y 'Crear blog'.")
+
 
 # ============================================================
-# ROUTER PRINCIPAL
+# app PRINCIPAL
 # ============================================================
 def main():
-    logged_in, email, name, picture, is_admin = auth_state()
+    logged_in, email, name, picture, is_fv = auth_state()
 
-    # Navbar: ocultar "Crear blog" si no es admin
-    render_navbar(page, show_crear_blog=is_admin)
+    # Navbar: mostrar "Crear blog" solo si es FV
+    render_navbar(page, show_crear_blog=is_fv)
 
     # Sidebar: si hay sesión, mostrar usuario + logout
-    render_user_sidebar(logged_in, email, name, picture, is_admin)
+    render_user_sidebar(logged_in, email, name, picture, is_fv)
 
-    # 🔒 GATE GLOBAL:
-    # Todas las páginas (excepto Inicio) requieren iniciar sesión.
-    if page != "Inicio" and not logged_in:
-        st.warning("Debes iniciar sesión para usar las aplicaciones.")
-        c1, c2, c3 = st.columns([2, 1.3, 2])
-        with c2:
-            st.button(":material/login: Iniciar sesión con Google", on_click=st.login, use_container_width=True)
-        st.stop()
+    # 🔒 GATE SELECTIVO:
+    restricted_pages = {"Cargar Data", "Crear blog"}
+    if page in restricted_pages:
+        if not logged_in:
+            st.warning(f"Debes iniciar sesión con Google para acceder a '{page}'.")
+            c1, c2, c3 = st.columns([2, 1.6, 2])
+            with c2:
+                st.button(":material/login: Iniciar sesión con Google", on_click=st.login, use_container_width=True)
+            st.stop()
+
+        if not is_fv:
+            st.error(f"Acceso denegado: '{page}' está disponible solo para cuentas {FV_DOMAIN}.")
+            st.info("Si necesitas acceso, inicia sesión con el correo corporativo correspondiente.")
+            st.stop()
 
     if page == "Inicio":
-        render_home(logged_in, email, name, is_admin)
+        render_home(logged_in, email, name, is_fv)
 
     elif page == "Blog":
         boletines_app()
 
     elif page == "Crear blog":
-        # Admin usa TODO; otros NO
-        if not is_admin:
-            st.error("Acceso denegado: solo cuentas @fvagconsulting.com pueden crear publicaciones.")
-            st.stop()
-
         if crear_blog_app is None:
             st.error("No pude importar crear_blog.py. Revisa que exista y que tenga crear_blog_app() o main().")
         else:
