@@ -535,7 +535,7 @@ def page_detail():
     render_md_with_local_images(md_text, post_dir)
 
 
-# =============================
+
 # MAIN
 # =============================
 def boletines_app():
@@ -545,7 +545,6 @@ def boletines_app():
         page_blog()
     else:
         page_detail()
-
 
 if __name__ == "__main__":
     boletines_app()
