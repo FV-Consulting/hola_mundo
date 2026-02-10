@@ -9,9 +9,6 @@ import streamlit as st
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
 
-# ✅ CONFIGURAR LÍMITE DE PANDAS STYLER
-pd.set_option("styler.render.max_elements", 10_000_000)
-
 # Importaciones opcionales
 PLOTLY_AVAILABLE = False
 try:
@@ -27,13 +24,6 @@ try:
     from statsmodels.stats.diagnostic import het_breuschpagan
     from statsmodels.stats.stattools import durbin_watson
     STATSMODELS_AVAILABLE = True
-except ImportError:
-    pass
-
-PYREADR_AVAILABLE = False
-try:
-    import pyreadr
-    PYREADR_AVAILABLE = True
 except ImportError:
     pass
 
@@ -75,17 +65,13 @@ def mpl_lat_formatter(decimals=0):
     return FuncFormatter(_fmt)
 
 
-def style_latino(df: pd.DataFrame, decimals=2, max_cells=262144):
+def style_latino(df: pd.DataFrame, decimals=2):
     """
-    Styler para que st.dataframe muestre formato latino.
-    ✅ Con límite de celdas para evitar errores.
+    Styler para que st.dataframe muestre:
+    - '.' miles
+    - ',' decimales
+    SOLO para columnas numéricas.
     """
-    total_cells = df.shape[0] * df.shape[1]
-    
-    # ✅ Si excede el límite, NO aplicar estilo
-    if total_cells > max_cells:
-        return df
-    
     num_cols = df.select_dtypes(include="number").columns.tolist()
     if not num_cols:
         return df
@@ -259,8 +245,7 @@ def listar_archivos():
         ".parquet", ".feather", ".dta",
         ".json", ".jsonl",
         ".sav", ".sas7bdat",
-        ".h5", ".hdf5",
-        ".rdata", ".rda"
+        ".h5", ".hdf5", ".rdata"
     ]
     
     for f in os.listdir(DATA_DIR):
@@ -305,7 +290,6 @@ def detectar_encoding(path: str) -> str:
 
 
 def excel_engine_for_ext(ext: str):
-    """✅ Motor correcto para cada tipo de Excel"""
     if ext == ".xlsx":
         return "openpyxl"
     if ext == ".xls":
@@ -314,54 +298,26 @@ def excel_engine_for_ext(ext: str):
         return "pyxlsb"
     if ext == ".xlsm":
         return "openpyxl"
-    return "openpyxl"  # ✅ Default seguro
+    return None
 
 
 def obtener_sheets_excel(path: str):
-    """✅ Obtención robusta y densa de hojas de Excel"""
     ext = ext_archivo(path)
     engine = excel_engine_for_ext(ext)
-    
     try:
-        # ✅ Intento 1: Con engine específico
         xls = pd.ExcelFile(path, engine=engine)
-        sheets = xls.sheet_names
-        
-        if not sheets:
-            raise ValueError("No se encontraron hojas")
-            
-        return sheets
-        
-    except Exception as e1:
+        return xls.sheet_names
+    except Exception:
         try:
-            # ✅ Intento 2: Sin especificar engine (pandas decide)
             xls = pd.ExcelFile(path)
-            sheets = xls.sheet_names
-            
-            if not sheets:
-                raise ValueError("No se encontraron hojas")
-                
-            return sheets
-            
-        except Exception as e2:
-            try:
-                # ✅ Intento 3: Forzar openpyxl
-                xls = pd.ExcelFile(path, engine="openpyxl")
-                sheets = xls.sheet_names
-                
-                if not sheets:
-                    raise ValueError("No se encontraron hojas")
-                    
-                return sheets
-                
-            except Exception as e3:
-                st.error(f"❌ No se pudieron leer las hojas del Excel: {e3}")
-                return []
+            return xls.sheet_names
+        except Exception:
+            return []
 
 
 @st.cache_data(show_spinner=False)
 def leer_archivo(path: str, sheet_name=None):
-    """✅ Lectura robusta, densa y precisa de múltiples formatos"""
+    """Lectura robusta y automática de múltiples formatos"""
     ext = ext_archivo(path)
     
     try:
@@ -380,49 +336,14 @@ def leer_archivo(path: str, sheet_name=None):
             encoding = detectar_encoding(path)
             return pd.read_csv(path, sep="\t", encoding=encoding)
         
-        # ✅ EXCEL - LECTURA DENSA Y PRECISA
+        # Excel
         elif ext in [".xlsx", ".xls", ".xlsb", ".xlsm"]:
             engine = excel_engine_for_ext(ext)
-            
-            # ✅ Si no se especifica hoja, usar la primera
             if sheet_name is None:
-                sheets = obtener_sheets_excel(path)
-                if not sheets:
-                    raise ValueError("El archivo Excel no tiene hojas legibles")
-                sheet_name = sheets[0]
-            
-            try:
-                # ✅ Intento 1: Con engine específico
-                df = pd.read_excel(
-                    path, 
-                    sheet_name=sheet_name, 
-                    engine=engine,
-                    na_values=['', ' ', 'NA', 'N/A', 'null', 'NULL', 'None'],
-                    keep_default_na=True
-                )
-                return df
-                
-            except Exception as e1:
-                try:
-                    # ✅ Intento 2: Sin engine (pandas decide)
-                    df = pd.read_excel(
-                        path, 
-                        sheet_name=sheet_name,
-                        na_values=['', ' ', 'NA', 'N/A', 'null', 'NULL', 'None'],
-                        keep_default_na=True
-                    )
-                    return df
-                    
-                except Exception as e2:
-                    # ✅ Intento 3: Forzar openpyxl
-                    df = pd.read_excel(
-                        path, 
-                        sheet_name=sheet_name, 
-                        engine="openpyxl",
-                        na_values=['', ' ', 'NA', 'N/A', 'null', 'NULL', 'None'],
-                        keep_default_na=True
-                    )
-                    return df
+                sheet_name = 0
+            if engine:
+                return pd.read_excel(path, sheet_name=sheet_name, engine=engine)
+            return pd.read_excel(path, sheet_name=sheet_name)
         
         # Parquet
         elif ext == ".parquet":
@@ -460,41 +381,6 @@ def leer_archivo(path: str, sheet_name=None):
         # HDF5
         elif ext in [".h5", ".hdf5"]:
             return pd.read_hdf(path)
-        
-        # R Data files (.rdata, .RData)
-        elif ext in [".rdata", ".rda"]:
-            try:
-                import pyreadr
-                result = pyreadr.read_r(path)
-                
-                if len(result) == 0:
-                    st.error("El archivo .rdata no contiene objetos válidos")
-                    return pd.DataFrame()
-                
-                if len(result) == 1:
-                    df_name = list(result.keys())[0]
-                    return result[df_name]
-                else:
-                    st.info(f"El archivo contiene {len(result)} objetos: {', '.join(result.keys())}")
-                    
-                    if 'rdata_object_selected' not in st.session_state:
-                        st.session_state['rdata_object_selected'] = list(result.keys())[0]
-                    
-                    selected_obj = st.sidebar.selectbox(
-                        "Selecciona el objeto a cargar",
-                        list(result.keys()),
-                        key='rdata_obj_selector'
-                    )
-                    
-                    return result[selected_obj]
-                    
-            except ImportError:
-                st.error("⚠️ Para leer archivos .rdata/.RData, instala: pip install pyreadr")
-                st.info("Alternativa: Convierte el archivo a .csv en R usando: write.csv(tu_data, 'archivo.csv')")
-                return pd.DataFrame()
-            except Exception as e:
-                st.error(f"Error al leer archivo .rdata: {str(e)}")
-                return pd.DataFrame()
         
         else:
             raise ValueError(f"Formato no soportado: {ext}")
@@ -631,9 +517,6 @@ def convertir_fecha_robusta(series: pd.Series) -> pd.Series:
 
     return result
 
-
-# [El resto del código permanece igual - continúa desde "TIPADO DE COLUMNAS" hasta el final]
-# Por brevidad, omito el resto que ya está correcto en tu código original
 
 # =========================
 # TIPADO DE COLUMNAS

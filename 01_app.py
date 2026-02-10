@@ -1,13 +1,12 @@
 # ============================================================
 # app.py — FV Consulting (Navbar fija + sidebar plegable)
-# ✅ NO aparecen botones blancos debajo (sin st.button "invisibles")
+# ✅ NO aparecen botones blancos debajo
 # ✅ Navbar azul navega con query params (?page=...)
-# ✅ Sidebar plegable NO queda roto (NO ocultamos header)
-# ✅ Mantiene tu router y tus apps
+# ✅ Sidebar plegable NO queda roto
+# ✅ SIN sistema de login
 # ============================================================
 
 import streamlit as st
-import logging as login 
 from PIL import Image
 from urllib.parse import quote
 
@@ -24,10 +23,6 @@ except Exception:
     except Exception:
         crear_blog_app = None
 
-#--------------------------------------------------
-# 0) Inicio de sesion
-#-----------------------------------------------------
-
 # ------------------------------------------------------------
 # 1) CONFIG
 # ------------------------------------------------------------
@@ -40,11 +35,11 @@ st.set_page_config(
     page_title="FV Consulting",
     page_icon=img1 if img1 else "📊",
     layout="wide",
-    initial_sidebar_state="collapsed"  # puedes dejar "auto" si quieres
+    initial_sidebar_state="collapsed"
 )
 
 # ------------------------------------------------------------
-# 2) Router por query params (FUENTE DE VERDAD)
+# 2) Router por query params
 # ------------------------------------------------------------
 qp = st.query_params
 page = qp.get("page", "Inicio")
@@ -54,7 +49,7 @@ def goto(page_name: str):
     st.rerun()
 
 # ------------------------------------------------------------
-# 3) CSS GLOBAL: NAVBAR FIJA + NO TAPAR CONTENIDO
+# 3) CSS GLOBAL
 # ------------------------------------------------------------
 NAVBAR_H = 66
 
@@ -72,10 +67,6 @@ def inject_global_css():
         #MainMenu {{visibility: hidden;}}
         footer {{visibility: hidden;}}
 
-        /* ❌ NO ocultar header, si no desaparece/rompe el ☰ del sidebar */
-        /* header {{visibility: hidden;}} */
-
-        /* Espacio para navbar fija */
         .main .block-container {{
           padding-top: {NAVBAR_H + 26}px !important;
           padding-left: 28px;
@@ -83,7 +74,6 @@ def inject_global_css():
           max-width: 1400px;
         }}
 
-        /* Navbar fija */
         .fv-navbar {{
           position: fixed;
           top: 0; left: 0; right: 0;
@@ -126,7 +116,6 @@ def inject_global_css():
           text-decoration: none !important;
         }}
 
-        /* Links navbar */
         .fv-nav-buttons {{
           display: flex;
           align-items: center;
@@ -164,7 +153,6 @@ def inject_global_css():
           background: rgba(255,255,255,0.25);
         }}
 
-        /* Responsive */
         @media (max-width: 1200px) {{
           .fv-nav-buttons {{ gap: 4px; }}
           .fv-nav-btn {{ padding: 6px 12px; font-size: 14px; }}
@@ -173,7 +161,7 @@ def inject_global_css():
         @media (max-width: 900px) {{
           .fv-brand-title {{ font-size: 22px; }}
           .main .block-container {{ padding-left: 16px; padding-right: 16px; }}
-          .fv-nav-buttons {{ display: none; }} /* en móvil, usar sidebar */
+          .fv-nav-buttons {{ display: none; }}
         }}
         </style>
         """,
@@ -181,7 +169,7 @@ def inject_global_css():
     )
 
 # ------------------------------------------------------------
-# 4) NAVBAR (SOLO HTML LINKS, SIN BOTONES STREAMLIT)
+# 4) NAVBAR
 # ------------------------------------------------------------
 def render_navbar(active_page: str):
     pages = [
@@ -239,8 +227,7 @@ def main():
 
     elif page == "Crear blog":
         if crear_blog_app is None:
-            st.error("No pude importar crear_blog.py. Revisa que exista y que tenga crear_blog_app() o main().")
-            st.info("Ejemplo recomendado en crear_blog.py: def crear_blog_app(): ...")
+            st.error("No pude importar crear_blog.py.")
         else:
             crear_blog_app()
 
@@ -249,7 +236,7 @@ def main():
 
     elif page == "Mapas":
         st.title("Mapas")
-        st.write("En esta sección podrás crear y visualizar mapas interactivos basados en datos geoespaciales.")
+        st.write("Sección de mapas interactivos.")
 
     elif page == "Cargar documentos":
         cargar_documentos()

@@ -1,0 +1,14 @@
+{
+  "last_file": "dataset_catastro_fruticola_20260127_171408.parquet",
+  "last_path": "archivos_subidos/datos\\dataset_catastro_fruticola_20260127_171408.parquet",
+  "original_name": "catastro_fruticola.csv",
+  "saved_at": "2026-01-27 17:14:13",
+  "format": "parquet",
+  "rows": 848931,
+  "cols": 14,
+  "meta": {
+    "read_meta": {
+      "ext": ".csv"
+    }
+  }
+}
