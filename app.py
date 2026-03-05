@@ -1,4 +1,4 @@
-# ============================================================
+#============================================================
 # app.py — FV Consulting (con estetica)
 # ============================================================
 
@@ -15,6 +15,8 @@ import requests
 # ----------------------------
 from cargar_documentos import cargar_documentos
 from data import data_multiple
+from mpas_simples import mapas_app
+
 from boletines import boletines_app
 
 try:
@@ -813,8 +815,11 @@ def main():
         data_multiple()
 
     elif page == "Mapas":
-        st.title("Mapas")
-        st.write("En esta sección podrás crear y visualizar mapas interactivos basados en datos geoespaciales.")
+        st.title("Chile Desde el Espacio")
+        if mapas_app is None:
+            st.error("No pude importar mapas_app.py. Revisa que exista y que tenga mapas_app() o main().")
+        else:
+            mapas_app()
 
     elif page == "Cargar Data":
         cargar_documentos()

@@ -22,3 +22,12 @@ streamlit>=1.53.0
 Authlib>=1.3.2
 requests
 pyreadr
+geopandas
+folium
+streamlit-folium
+shapely
+pyproj
+fiona
+dropbox
+sqlalchemy
+psycopg2-binary

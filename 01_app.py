@@ -12,6 +12,8 @@ from urllib.parse import quote
 
 from cargar_documentos import cargar_documentos
 from data import data_multiple
+from mpas_simples import app as mapas_app
+
 from boletines import boletines_app
 
 # ---- Import creador de blog ----
@@ -240,11 +242,14 @@ def main():
 
     elif page == "Cargar documentos":
         cargar_documentos()
-
+    elif page == "Mapas":
+      mapas_app()
     else:
         st.warning("Página no reconocida. Volviendo a Inicio...")
         st.query_params["page"] = "Inicio"
         st.rerun()
+    
+
 
 if __name__ == "__main__":
     main()
