@@ -154,7 +154,7 @@ def format_number_view(x, decimals=None):
 
 
 # ============================================================
-# HELPERS (NO TOCAN TUS DATOS)
+# HELPERS
 # ============================================================
 
 def ensure_wgs84(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
