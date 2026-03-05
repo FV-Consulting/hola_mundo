@@ -8,11 +8,10 @@ import streamlit as st
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
 
-# ✅ CONFIGURAR LÍMITE DE PANDAS STYLER
+#  CONFIGURAR LÍMITE DE PANDAS STYLER
 pd.set_option("styler.render.max_elements", 10_000_000)
 
-# ✅ CONEXIÓN A NEON (POSTGRESQL)
-# Se asume que la URL está en st.secrets["connections"]["postgresql"]["url"]
+#  CONEXIÓN A NEON (POSTGRESQL)
 try:
     conn = st.connection("postgresql", type="sql")
 except Exception as e:
