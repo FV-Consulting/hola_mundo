@@ -543,64 +543,7 @@ div[data-testid="stVerticalBlock"]:has(#fv-cards-anchor) {
 def render_home(logged_in: bool, email: str, name: str, is_fv: bool):
     st.markdown(HOME_CSS, unsafe_allow_html=True)
 
-    col_left, col_center, col_right = st.columns([1, 2, 1])
-
-    with col_left:
-        st.markdown(
-            """
-            <div class="hero-left-text">
-                <h2 class="hero-left-title">Información, datos, economía y simpleza en un mismo sitio.</h2>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-    def img_to_data_uri(path: str) -> str:
-        p = Path(path)
-        if not p.exists():
-            return ""
-        ext = p.suffix.lower().replace(".", "")
-        if ext == "jpg":
-            ext = "jpeg"
-        return f"data:image/{ext};base64,{base64.b64encode(p.read_bytes()).decode('utf-8')}"
-
-    def render_img(path: str, placeholder: str):
-        uri = img_to_data_uri(path)
-        if uri:
-            st.markdown(f'<div class="img-card"><img src="{uri}"></div>', unsafe_allow_html=True)
-        else:
-            st.markdown(
-                f'<div class="img-card" style="color:#64748b;font-weight:800;">{placeholder}</div>',
-                unsafe_allow_html=True,
-            )
-
-    with col_center:
-        st.markdown('<div class="images-showcase-center">', unsafe_allow_html=True)
-        r1 = st.columns(3)
-        with r1[0]:
-            render_img("image_file/image_1.png", "1")
-        with r1[1]:
-            render_img("image_file/image_2.png", "2")
-        with r1[2]:
-            render_img("image_file/image_3.png", "3")
-        r2 = st.columns(3)
-        with r2[0]:
-            render_img("image_file/image_4.png", "4")
-        with r2[1]:
-            render_img("image_file/logo_fvag.png", "FV")
-        with r2[2]:
-            render_img("image_file/image_5.png", "5")
-
-    with col_right:
-        st.markdown(
-            """
-            <div class="hero-right-text">
-                <h2 class="hero-right-title">Navega por la innovación en análisis e investigación.</h2>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
+    # ✅ Desde aquí: SOLO "Bienvenidos..." hacia abajo (se elimina el hero completo)
     st.markdown(
         """
         <div style="text-align:center; padding: 2.2rem 2rem 0.35rem;">
@@ -664,8 +607,6 @@ def render_home(logged_in: bool, email: str, name: str, is_fv: bool):
             )
 
     # ===== CARDS + BOTONES =====
-    # Blog / Análisis / Mapas: siempre disponibles
-    # Cargar Data / Crear blog: solo con @fvagconsulting.com
     can_open_public = True
     can_open_restricted = bool(is_fv)
 
@@ -770,8 +711,6 @@ def render_home(logged_in: bool, email: str, name: str, is_fv: bool):
         st.caption(f"🔒 Para 'Cargar Data' y 'Crear blog' debes iniciar sesión con {FV_DOMAIN}.")
     elif (logged_in and not is_fv):
         st.caption(f"🟠 Tu sesión está activa, pero solo {FV_DOMAIN} puede usar 'Cargar Data' y 'Crear blog'.")
-
-
 # ============================================================
 # app PRINCIPAL
 # ============================================================
